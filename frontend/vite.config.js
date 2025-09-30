@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: "0.0.0.0",
+    allowedHosts: true,
     port: 5173,
     host: true,
     proxy: {
