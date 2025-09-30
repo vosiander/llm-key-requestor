@@ -2,7 +2,7 @@
   <section id="request-form" class="key-request-form py-16">
     <v-container>
       <v-row justify="center">
-        <v-col cols="12" md="8" lg="6">
+        <v-col>
           <v-card
             class="form-card pa-8"
             variant="elevated"
