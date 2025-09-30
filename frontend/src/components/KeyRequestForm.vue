@@ -122,7 +122,8 @@
                     :key="model.id"
                     cols="12"
                     sm="6"
-                    md="6"
+                    md="4"
+                    lg="3"
                   >
                     <v-card
                       class="model-card"
@@ -402,7 +403,7 @@ export default {
   },
   methods: {
     selectModel(model) {
-      this.formData.llm = model.title
+      this.formData.llm = model.id
       this.selectedModelId = model.id
     },
     

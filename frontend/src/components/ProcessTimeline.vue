@@ -268,7 +268,7 @@ export default {
 
 .timeline-line {
   position: absolute;
-  top: 50%;
+  top: 40px;
   left: 16.67%;
   width: 66.66%;
   height: 4px;
