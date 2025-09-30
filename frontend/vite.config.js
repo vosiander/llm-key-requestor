@@ -61,8 +61,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vuetify: ['vuetify'],
-          'mdi-icons': ['@mdi/font']
+          vuetify: ['vuetify']
         }
       }
     },
