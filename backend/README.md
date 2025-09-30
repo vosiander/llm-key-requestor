@@ -6,9 +6,12 @@ FastAPI backend application for the LLM Key Requestor service, built with UV pac
 
 - FastAPI for high-performance REST API
 - UV for fast, reliable dependency management
+- YAML-based configuration for LLM models
+- LiteLLM backend integration support
 - Pydantic for data validation
 - Email validation
 - CORS support for frontend integration
+- Environment variable overrides for deployment flexibility
 - Custom certificate support via volume mount
 - Dockerized for easy deployment
 
@@ -33,10 +36,36 @@ The API will be available at `http://localhost:8000`
 
 API Documentation: `http://localhost:8000/docs`
 
+## Configuration
+
+The API uses a YAML-based configuration system for managing LLM models and backend settings. See [CONFIG.md](CONFIG.md) for detailed configuration instructions.
+
+### Quick Configuration
+
+Edit `config.yaml` to:
+- Add or modify available LLM models
+- Configure LiteLLM backend URL and API key
+
+### Environment Variables
+
+Override configuration using environment variables:
+
+- `LITELLM_BASE_URL` - LiteLLM backend base URL (default: `http://localhost:4000`)
+- `LITELLM_API_KEY` - LiteLLM backend API key
+- `CONFIG_FILE` - Path to configuration file (default: `config.yaml`)
+
+Example:
+```bash
+export LITELLM_BASE_URL="https://api.litellm.ai"
+export LITELLM_API_KEY="your-api-key"
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
 ## API Endpoints
 
 - `GET /` - API status check
 - `GET /health` - Health check endpoint
+- `GET /api/models` - Get list of available LLM models
 - `POST /api/request-key` - Submit key request
 
 ## Docker
@@ -65,11 +94,6 @@ The entrypoint script will automatically add `.crt` and `.pem` files to the syst
 - FastAPI - Web framework
 - Uvicorn - ASGI server
 - Pydantic - Data validation
+- Pydantic Settings - Environment variable management
+- PyYAML - YAML configuration parsing
 - email-validator - Email validation
-
-## Environment Variables
-
-Currently, no environment variables are required. Future enhancements may include:
-- Database connection strings
-- Email service credentials
-- API keys for LLM providers

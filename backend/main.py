@@ -4,6 +4,8 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 import logging
 
+from config import config_manager, LLMModel
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,10 +15,9 @@ app = FastAPI(title="LLM Key Requestor API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend domain
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=True,
 )
 
 
@@ -31,6 +32,10 @@ class KeyResponse(BaseModel):
     request_id: Optional[str] = None
 
 
+class ModelsResponse(BaseModel):
+    models: list[LLMModel]
+
+
 @app.get("/")
 async def root():
     return {"message": "LLM Key Requestor API", "status": "active"}
@@ -39,6 +44,16 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/models", response_model=ModelsResponse)
+async def get_models():
+    """
+    Return list of available LLM models with metadata from configuration.
+    """
+    models = config_manager.get_models()
+    logger.info(f"Returning {len(models)} available models from configuration")
+    return ModelsResponse(models=models)
 
 
 @app.post("/api/request-key", response_model=KeyResponse)

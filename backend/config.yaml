@@ -1,0 +1,58 @@
+# LLM Key Requestor Configuration
+
+# LiteLLM Backend Configuration
+litellm:
+  # Base URL for LiteLLM backend (can be overridden by LITELLM_BASE_URL env var)
+  base_url: "http://localhost:4000"
+  # API key for LiteLLM backend (can be overridden by LITELLM_API_KEY env var)
+  api_key: ""
+
+# Available LLM Models
+models:
+  - id: "openai-gpt4"
+    title: "OpenAI GPT-4"
+    icon: "simple-icons:openai"
+    color: "#412991"
+    description: "Advanced reasoning and complex problem-solving capabilities with extended context window."
+
+  - id: "openai-gpt3.5"
+    title: "OpenAI GPT-3.5"
+    icon: "simple-icons:openai"
+    color: "#412991"
+    description: "Fast and efficient model for general-purpose tasks and conversational AI."
+
+  - id: "claude-3"
+    title: "Claude 3 (Anthropic)"
+    icon: "simple-icons:anthropic"
+    color: "#D4A574"
+    description: "Anthropic's most capable model with strong reasoning and analysis capabilities."
+
+  - id: "gemini-pro"
+    title: "Google Gemini Pro"
+    icon: "simple-icons:google"
+    color: "#4285F4"
+    description: "Google's multimodal AI with excellent performance across text, code, and reasoning tasks."
+
+  - id: "llama-2"
+    title: "Meta Llama 2"
+    icon: "simple-icons:meta"
+    color: "#0866FF"
+    description: "Open-source model optimized for dialogue and general-purpose applications."
+
+  - id: "mistral-7b"
+    title: "Mistral 7B"
+    icon: "simple-icons:mistral"
+    color: "#F2A73B"
+    description: "Efficient open-weight model with strong performance for its size."
+
+  - id: "grok"
+    title: "xAI Grok"
+    icon: "mdi:robot"
+    color: "#000000"
+    description: "xAI's conversational AI with real-time knowledge and unique personality."
+
+  - id: "cohere-command"
+    title: "Cohere Command"
+    icon: "mdi:message-processing"
+    color: "#39594D"
+    description: "Enterprise-focused model for text generation and analysis tasks."

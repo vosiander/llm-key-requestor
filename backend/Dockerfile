@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Copy application files
 COPY pyproject.toml uv.lock* ./
-COPY main.py ./
+COPY main.py config.py config.yaml ./
 
 # Install dependencies
 RUN uv sync --frozen --no-dev
