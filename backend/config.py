@@ -1,12 +1,16 @@
 """Configuration management for LLM Key Requestor."""
 
+import logging
 import os
 from pathlib import Path
 from typing import Optional
 
+import requests
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
 
 
 class LLMModel(BaseModel):
@@ -24,6 +28,7 @@ class LiteLLMConfig(BaseModel):
     
     base_url: str = Field(default="http://localhost:4000")
     api_key: str = Field(default="")
+    enable_litellm_models: bool = Field(default=True)
 
 
 class Config(BaseSettings):
@@ -39,6 +44,11 @@ class Config(BaseSettings):
         default=None,
         alias="LITELLM_API_KEY",
         description="LiteLLM backend API key"
+    )
+    enable_litellm_models: Optional[bool] = Field(
+        default=None,
+        alias="ENABLE_LITELLM_MODELS",
+        description="Enable fetching models from LiteLLM"
     )
     
     # Path to config file
@@ -84,13 +94,94 @@ class ConfigManager:
         
         return LiteLLMConfig(
             base_url=self.settings.litellm_base_url or yaml_config.get('base_url', 'http://localhost:4000'),
-            api_key=self.settings.litellm_api_key or yaml_config.get('api_key', '')
+            api_key=self.settings.litellm_api_key or yaml_config.get('api_key', ''),
+            enable_litellm_models=self.settings.enable_litellm_models if self.settings.enable_litellm_models is not None else yaml_config.get('enable_litellm_models', True)
         )
     
     def get_models(self) -> list[LLMModel]:
         """Get list of available LLM models from configuration."""
         models_data = self._config_data.get('models', [])
         return [LLMModel(**model) for model in models_data]
+    
+    def fetch_litellm_models(self) -> list[LLMModel]:
+        """
+        Fetch available models from LiteLLM backend.
+        
+        Returns:
+            List of LLMModel objects fetched from LiteLLM, or empty list on error.
+        """
+        litellm_config = self.get_litellm_config()
+        
+        if not litellm_config.enable_litellm_models:
+            logger.info("LiteLLM models fetching is disabled")
+            return []
+        
+        try:
+            # LiteLLM follows OpenAI API format with /v1/models endpoint
+            url = f"{litellm_config.base_url.rstrip('/')}/v1/models"
+            headers = {}
+            
+            if litellm_config.api_key:
+                headers["Authorization"] = f"Bearer {litellm_config.api_key}"
+            
+            response = requests.get(url, headers=headers, timeout=10.0)
+            response.raise_for_status()
+            
+            data = response.json()
+            models = []
+            
+            # LiteLLM returns models in OpenAI format: {"data": [{"id": "model-name", ...}, ...]}
+            for model_data in data.get("data", []):
+                model_id = model_data.get("id", "")
+                if model_id:
+                    # Create LLMModel with default metadata for litellm models
+                    models.append(LLMModel(
+                        id=model_id,
+                        title=model_id.replace("-", " ").title(),
+                        icon="mdi:robot",
+                        color="#6366f1",
+                        description=f"Model from LiteLLM: {model_id}"
+                    ))
+            
+            logger.info(f"Successfully fetched {len(models)} models from LiteLLM")
+            return models
+                
+        except requests.HTTPError as e:
+            logger.error(f"HTTP error fetching models from LiteLLM: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Error fetching models from LiteLLM: {e}")
+            return []
+    
+    def get_all_models(self) -> list[LLMModel]:
+        """
+        Get merged list of local and LiteLLM models.
+        
+        Returns:
+            Combined list of models, with local models taking precedence for duplicates.
+        """
+        # Get local models from config
+        local_models = self.get_models()
+        
+        # Get LiteLLM models if enabled
+        litellm_models = self.fetch_litellm_models()
+        
+        # Create a dictionary to track models by ID (local models take precedence)
+        models_dict = {}
+        
+        # Add LiteLLM models first
+        for model in litellm_models:
+            models_dict[model.id] = model
+        
+        # Add local models (will override litellm models with same ID)
+        for model in local_models:
+            models_dict[model.id] = model
+        
+        # Return merged list
+        merged_models = list(models_dict.values())
+        logger.info(f"Returning {len(merged_models)} total models ({len(local_models)} local, {len(litellm_models)} from LiteLLM)")
+        
+        return merged_models
 
 
 # Global config manager instance

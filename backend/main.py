@@ -47,12 +47,12 @@ async def health_check():
 
 
 @app.get("/api/models", response_model=ModelsResponse)
-async def get_models():
+def get_models():
     """
     Return list of available LLM models with metadata from configuration.
+    Includes both local models and models from LiteLLM if enabled.
     """
-    models = config_manager.get_models()
-    logger.info(f"Returning {len(models)} available models from configuration")
+    models = config_manager.get_all_models()
     return ModelsResponse(models=models)
 
 

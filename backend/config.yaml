@@ -6,6 +6,8 @@ litellm:
   base_url: "http://localhost:4000"
   # API key for LiteLLM backend (can be overridden by LITELLM_API_KEY env var)
   api_key: ""
+  # Enable fetching models from LiteLLM (can be overridden by ENABLE_LITELLM_MODELS env var)
+  enable_litellm_models: true
 
 # Available LLM Models
 models:
