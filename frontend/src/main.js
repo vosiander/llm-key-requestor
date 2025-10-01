@@ -5,6 +5,9 @@ import './assets/main.css'
 
 const app = createApp(App)
 
+// Disable Vue devtools in production
+app.config.devtools = false
+
 // Use Vuetify plugin
 app.use(vuetify)
 

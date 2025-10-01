@@ -23,7 +23,7 @@ class EmailService:
         self.config = config
         logger.info(f"EmailService initialized with SMTP host {config.smtp_host}:{config.smtp_port}")
     
-    def _create_approval_email(self, email: str, model: str, api_key: str) -> MIMEMultipart:
+    def _create_approval_email(self, email: str, model: str, api_key: str, gateway_url: str) -> MIMEMultipart:
         """
         Create approval email message.
         
@@ -31,6 +31,7 @@ class EmailService:
             email: Recipient email address
             model: LLM model identifier
             api_key: Generated API key
+            gateway_url: Gateway base URL for API access
             
         Returns:
             MIMEMultipart email message
@@ -46,6 +47,7 @@ Your API key request has been approved!
 
 Model: {model}
 API Key: {api_key}
+Gateway URL: {gateway_url}
 
 Please keep your API key secure and do not share it with others.
 
@@ -68,6 +70,10 @@ Thank you for using our service!
       <tr>
         <td style="padding: 8px; font-weight: bold;">API Key:</td>
         <td style="padding: 8px; font-family: monospace; background-color: #f5f5f5;">{api_key}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; font-weight: bold;">Gateway URL:</td>
+        <td style="padding: 8px; font-family: monospace; background-color: #f5f5f5;">{gateway_url}</td>
       </tr>
     </table>
     
@@ -149,7 +155,7 @@ Thank you for your understanding.
         
         return msg
     
-    async def send_approval_notification(self, email: str, model: str, api_key: str) -> bool:
+    async def send_approval_notification(self, email: str, model: str, api_key: str, gateway_url: str) -> bool:
         """
         Send approval email with API key.
         
@@ -157,12 +163,13 @@ Thank you for your understanding.
             email: Recipient email address
             model: LLM model identifier
             api_key: Generated API key
+            gateway_url: Gateway base URL for API access
             
         Returns:
             True if email sent successfully, False otherwise
         """
         try:
-            msg = self._create_approval_email(email, model, api_key)
+            msg = self._create_approval_email(email, model, api_key, gateway_url)
             
             # Configure SMTP
             smtp_kwargs = {

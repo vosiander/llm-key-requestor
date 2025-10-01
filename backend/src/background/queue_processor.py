@@ -121,7 +121,8 @@ class QueueProcessor:
                     email_sent = await self.email_service.send_approval_notification(
                         email=request.email,
                         model=request.model,
-                        api_key=api_key
+                        api_key=api_key,
+                        gateway_url=self.litellm_config.base_url
                     )
 
                     logger.info(f"Email sent: {email_sent}")
