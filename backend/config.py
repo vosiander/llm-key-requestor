@@ -10,6 +10,8 @@ import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
+from src.models.key_request import EmailConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -182,6 +184,42 @@ class ConfigManager:
         logger.info(f"Returning {len(merged_models)} total models ({len(local_models)} local, {len(litellm_models)} from LiteLLM)")
         
         return merged_models
+    
+    def get_smtp_config(self) -> EmailConfig:
+        """
+        Get SMTP configuration with environment variable overrides.
+        
+        Environment variables take precedence over YAML values.
+        """
+        yaml_smtp = self._config_data.get('smtp', {})
+        
+        return EmailConfig(
+            smtp_host=os.getenv('SMTP_HOST', yaml_smtp.get('host', 'localhost')),
+            smtp_port=os.getenv('SMTP_PORT', yaml_smtp.get('port', 587)),
+            smtp_user=os.getenv('SMTP_USER', yaml_smtp.get('user', '')),
+            smtp_password=os.getenv('SMTP_PASSWORD', yaml_smtp.get('password', '')),
+            smtp_from=os.getenv('SMTP_FROM', yaml_smtp.get('from', 'noreply@example.com')),
+            smtp_use_tls=os.getenv('SMTP_USE_TLS', str(yaml_smtp.get('use_tls', True))).lower() in ('true', '1', 'yes')
+        )
+    
+    def get_queue_interval(self) -> str:
+        """
+        Get approval queue interval with environment variable override.
+        
+        Returns interval string (e.g., '30s', '1m').
+        """
+        yaml_approval = self._config_data.get('approval', {})
+        return os.getenv('APPROVAL_QUEUE_INTERVAL', yaml_approval.get('queue_interval', '30s'))
+    
+    def get_kubernetes_namespace(self) -> Optional[str]:
+        """
+        Get Kubernetes namespace with environment variable override.
+        
+        Returns None to use current namespace, or specific namespace string.
+        """
+        yaml_k8s = self._config_data.get('kubernetes', {})
+        namespace = os.getenv('KUBERNETES_NAMESPACE', yaml_k8s.get('namespace', ''))
+        return namespace if namespace else None
 
 
 # Global config manager instance

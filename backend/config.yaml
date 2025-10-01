@@ -58,3 +58,10 @@ models:
     icon: "mdi:message-processing"
     color: "#39594D"
     description: "Enterprise-focused model for text generation and analysis tasks."
+
+
+# Approval Queue Configuration
+approval:
+  # Queue processing interval (can be overridden by APPROVAL_QUEUE_INTERVAL env var)
+  # Supported formats: "30s", "1m", "5m", etc.
+  queue_interval: "30s"
