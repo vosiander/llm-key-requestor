@@ -46,7 +46,7 @@ class KeyManagement:
         if models is None:
             models = []
 
-        if isinstance(models, list):
+        if not isinstance(models, list):
             raise ValueError("models must be a list of model names")
 
         rsp = requests.post(
