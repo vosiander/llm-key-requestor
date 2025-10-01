@@ -1,14 +1,11 @@
 """Email Service for sending notifications."""
-import logging
+from loguru import logger
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 import aiosmtplib
 
 from src.models.key_request import EmailConfig
-
-logger = logging.getLogger(__name__)
-
 
 class EmailService:
     """Service for handling SMTP email notifications."""

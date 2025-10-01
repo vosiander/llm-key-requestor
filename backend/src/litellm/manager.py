@@ -1,7 +1,6 @@
 from injector import singleton
 from loguru import logger
 import requests
-import os
 
 @singleton
 class KeyManagement:

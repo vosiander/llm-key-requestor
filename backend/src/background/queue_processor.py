@@ -1,6 +1,5 @@
 """Background queue processor for handling pending key requests."""
 import asyncio
-import logging
 import re
 from typing import Optional
 from loguru import logger

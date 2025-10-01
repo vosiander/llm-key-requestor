@@ -1,9 +1,6 @@
 """Approval Service for processing key request approvals."""
-import logging
+from loguru import logger
 from src.models.key_request import ApprovalResponse, KeyRequestState
-
-logger = logging.getLogger(__name__)
-
 
 class ApprovalService:
     """Service for handling approval workflow logic."""

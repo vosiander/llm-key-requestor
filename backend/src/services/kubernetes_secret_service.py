@@ -1,7 +1,6 @@
 """Kubernetes Secret Service for managing key request state."""
 import base64
-import json
-import logging
+from loguru import logger
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -10,9 +9,6 @@ from kubernetes import client, config
 from kubernetes.client import V1Secret, V1ObjectMeta, ApiException
 
 from src.models.key_request import KeyRequestData, KeyRequestState
-
-logger = logging.getLogger(__name__)
-
 
 class KubernetesSecretService:
     """Service for managing key request secrets in Kubernetes."""
