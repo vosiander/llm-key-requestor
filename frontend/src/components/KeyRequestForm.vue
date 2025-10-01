@@ -19,11 +19,11 @@
               </v-icon>
               
               <h2 class="text-h4 font-weight-bold mb-3">
-                Request Your API Key
+                {{ $t('form.title') }}
               </h2>
               
               <p class="text-body-1 text-medium-emphasis">
-                Fill out the form below to get access to your preferred LLM provider
+                {{ $t('form.subtitle') }}
               </p>
             </div>
 
@@ -38,7 +38,7 @@
               <template #title>
                 <div class="d-flex align-center">
                   <v-icon class="me-2">mdi-check-circle</v-icon>
-                  Request Submitted Successfully!
+                  {{ $t('form.messages.successTitle') }}
                 </div>
               </template>
               <p class="mb-0">{{ responseMessage }}</p>
@@ -57,7 +57,7 @@
               <template #title>
                 <div class="d-flex align-center">
                   <v-icon class="me-2">mdi-alert-circle</v-icon>
-                  Request Failed
+                  {{ $t('form.messages.errorTitle') }}
                 </div>
               </template>
               <p class="mb-0">{{ error }}</p>
@@ -73,7 +73,7 @@
               <div class="mb-6">
                 <div class="d-flex align-center justify-space-between mb-4">
                   <h3 class="text-h6 font-weight-medium">
-                    Choose Your LLM Provider
+                    {{ $t('form.provider.title') }}
                   </h3>
                   <v-btn
                     v-if="modelsError"
@@ -83,7 +83,7 @@
                     @click="fetchModels"
                   >
                     <v-icon start>mdi-refresh</v-icon>
-                    Retry
+                    {{ $t('form.provider.retry') }}
                   </v-btn>
                 </div>
 
@@ -95,7 +95,7 @@
                     size="48"
                   />
                   <p class="text-body-2 text-medium-emphasis mt-4">
-                    Loading available models...
+                    {{ $t('form.provider.loading') }}
                   </p>
                 </div>
 
@@ -109,7 +109,7 @@
                   <template #title>
                     <div class="d-flex align-center">
                       <v-icon class="me-2">mdi-alert</v-icon>
-                      Failed to Load Models
+                      {{ $t('form.provider.error') }}
                     </div>
                   </template>
                   <p class="mb-0">{{ modelsError }}</p>
@@ -165,8 +165,8 @@
               <v-text-field
                 v-model="formData.llm"
                 :rules="llmRules"
-                label="LLM Model"
-                placeholder="e.g., OpenAI GPT-5, Claude 4, Gemini Ultra, or select from cards above"
+                :label="$t('form.fields.llm.label')"
+                :placeholder="$t('form.fields.llm.placeholder')"
                 variant="outlined"
                 prepend-inner-icon="mdi-robot"
                 class="mb-4"
@@ -185,7 +185,7 @@
                         mdi-information-outline
                       </v-icon>
                     </template>
-                    <span>Select a model card above or enter any custom model name</span>
+                    <span>{{ $t('form.fields.llm.tooltip') }}</span>
                   </v-tooltip>
                 </template>
               </v-text-field>
@@ -194,8 +194,8 @@
               <v-text-field
                 v-model="formData.email"
                 :rules="emailRules"
-                label="Email Address"
-                placeholder="Enter your email address"
+                :label="$t('form.fields.email.label')"
+                :placeholder="$t('form.fields.email.placeholder')"
                 variant="outlined"
                 prepend-inner-icon="mdi-email"
                 type="email"
@@ -207,17 +207,17 @@
               <!-- Terms and Conditions -->
               <v-checkbox
                 v-model="agreeToTerms"
-                :rules="[v => !!v || 'You must agree to the terms and conditions']"
+                :rules="[v => !!v || $t('form.terms.required')]"
                 class="mb-4"
                 :disabled="isLoading"
               >
                 <template #label>
                   <span class="text-body-2">
-                    I agree to the 
+                    {{ $t('form.terms.label', { terms: '' }) }}
                     <a href="#" class="text-primary text-decoration-none" @click.prevent="showTerms = true">
-                      Terms and Conditions
+                      {{ $t('form.terms.link') }}
                     </a>
-                    and understand that API keys are subject to provider terms of service.
+                    {{ $t('form.terms.label', { terms: '' }).split('{terms}')[1] }}
                   </span>
                 </template>
               </v-checkbox>
@@ -236,7 +236,7 @@
                 <template #prepend>
                   <v-icon>mdi-send</v-icon>
                 </template>
-                {{ isLoading ? 'Submitting Request...' : 'Submit Request' }}
+                {{ isLoading ? $t('form.buttons.submitting') : $t('form.buttons.submit') }}
               </v-btn>
 
               <!-- Reset Button -->
@@ -250,7 +250,7 @@
                 <template #prepend>
                   <v-icon>mdi-refresh</v-icon>
                 </template>
-                Reset Form
+                {{ $t('form.buttons.reset') }}
               </v-btn>
             </v-form>
 
@@ -260,12 +260,12 @@
             <div class="text-center">
               <p class="text-body-2 text-medium-emphasis mb-2">
                 <v-icon size="16" class="me-1">mdi-shield-check</v-icon>
-                Your information is secure and encrypted
+                {{ $t('form.security.encrypted') }}
               </p>
               
               <p class="text-body-2 text-medium-emphasis">
                 <v-icon size="16" class="me-1">mdi-clock</v-icon>
-                Most requests are processed within 24 hours
+                {{ $t('form.security.processing') }}
               </p>
             </div>
           </v-card>
@@ -282,44 +282,39 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="me-2">mdi-file-document-outline</v-icon>
-          Terms and Conditions
+          {{ $t('termsDialog.title') }}
         </v-card-title>
         
         <v-divider></v-divider>
         
         <v-card-text class="py-6">
           <div class="terms-content">
-            <h3 class="text-h6 mb-3">API Key Request Terms</h3>
+            <h3 class="text-h6 mb-3">{{ $t('termsDialog.heading') }}</h3>
             
             <p class="mb-4">
-              By submitting this form, you acknowledge and agree to the following terms:
+              {{ $t('termsDialog.intro') }}
             </p>
             
             <ul class="mb-4">
               <li class="mb-2">
-                <strong>Legitimate Use:</strong> API keys are provided for legitimate development, 
-                research, or business purposes only.
+                <strong>{{ $t('termsDialog.items.legitimateUse.title') }}</strong> {{ $t('termsDialog.items.legitimateUse.description') }}
               </li>
               <li class="mb-2">
-                <strong>Provider Terms:</strong> You agree to comply with the terms of service 
-                of the respective LLM provider (OpenAI, Anthropic, Google, etc.).
+                <strong>{{ $t('termsDialog.items.providerTerms.title') }}</strong> {{ $t('termsDialog.items.providerTerms.description') }}
               </li>
               <li class="mb-2">
-                <strong>Security:</strong> You are responsible for keeping your API keys secure 
-                and not sharing them with unauthorized parties.
+                <strong>{{ $t('termsDialog.items.security.title') }}</strong> {{ $t('termsDialog.items.security.description') }}
               </li>
               <li class="mb-2">
-                <strong>Usage Monitoring:</strong> API usage may be monitored for compliance 
-                and security purposes.
+                <strong>{{ $t('termsDialog.items.monitoring.title') }}</strong> {{ $t('termsDialog.items.monitoring.description') }}
               </li>
               <li class="mb-2">
-                <strong>Revocation:</strong> We reserve the right to revoke access if terms 
-                are violated or suspicious activity is detected.
+                <strong>{{ $t('termsDialog.items.revocation.title') }}</strong> {{ $t('termsDialog.items.revocation.description') }}
               </li>
             </ul>
             
             <p class="text-body-2 text-medium-emphasis">
-              For questions about these terms, please contact our support team.
+              {{ $t('termsDialog.footer') }}
             </p>
           </div>
         </v-card-text>
@@ -333,7 +328,7 @@
             variant="elevated"
             @click="showTerms = false"
           >
-            I Understand
+            {{ $t('termsDialog.button') }}
           </v-btn>
         </v-card-actions>
       </v-card>

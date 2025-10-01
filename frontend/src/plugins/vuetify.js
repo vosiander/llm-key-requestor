@@ -5,9 +5,17 @@ import 'vuetify/styles'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// Import Vuetify locale adapters
+import { de, en, es } from 'vuetify/locale'
+
 export default createVuetify({
   components,
   directives,
+  locale: {
+    locale: 'de',
+    fallback: 'en',
+    messages: { de, en, es }
+  },
   theme: {
     defaultTheme: 'light',
     themes: {

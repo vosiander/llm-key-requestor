@@ -22,18 +22,18 @@
                   mdi-key-variant
                 </v-icon>
                 <h3 class="text-h6 font-weight-bold">
-                  LLM Key Requestor
+                  {{ $t('footer.title') }}
                 </h3>
               </div>
               
               <p class="text-body-2 text-medium-emphasis mb-4">
-                Secure API key management for leading language model providers
+                {{ $t('footer.description') }}
               </p>
               
               <div class="d-flex justify-center align-center flex-wrap ga-4 mb-4">
                 <v-chip
-                  v-for="provider in featuredProviders"
-                  :key="provider"
+                  v-for="(provider, index) in $t('footer.providers')"
+                  :key="index"
                   variant="tonal"
                   size="small"
                   color="primary"
@@ -52,15 +52,22 @@
                     @click="scrollToTop"
                   >
                     <v-icon start>mdi-arrow-up</v-icon>
-                    Back to Top
+                    {{ $t('footer.backToTop') }}
                   </v-btn>
+                </v-col>
+              </v-row>
+              
+              <!-- Language Switcher -->
+              <v-row justify="center" class="mt-2">
+                <v-col cols="auto">
+                  <LanguageSwitcher />
                 </v-col>
               </v-row>
               
               <v-divider class="my-4"></v-divider>
               
               <p class="text-body-2 text-medium-emphasis">
-                &copy; {{ currentYear }} LLM Key Requestor. Built with Vue.js and Vuetify.
+                {{ $t('footer.copyright', { year: currentYear }) }}
               </p>
               
               <div class="mt-2">
@@ -71,7 +78,7 @@
                   @click="showAbout = true"
                 >
                   <v-icon start size="16">mdi-information</v-icon>
-                  About
+                  {{ $t('footer.about') }}
                 </v-btn>
               </div>
             </v-col>
@@ -89,7 +96,7 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="me-2">mdi-information</v-icon>
-          About LLM Key Requestor
+          {{ $t('aboutDialog.title') }}
         </v-card-title>
         
         <v-divider></v-divider>
@@ -97,32 +104,25 @@
         <v-card-text class="py-6">
           <div class="about-content">
             <p class="mb-4">
-              LLM Key Requestor is a secure platform for managing API key requests 
-              for leading language model providers. Our streamlined process ensures 
-              quick and secure access to the AI tools you need.
+              {{ $t('aboutDialog.intro') }}
             </p>
             
-            <h4 class="text-h6 mb-3">Supported Providers</h4>
+            <h4 class="text-h6 mb-3">{{ $t('aboutDialog.supportedProviders.title') }}</h4>
             <ul class="mb-4">
-              <li>OpenAI (GPT-4, GPT-3.5)</li>
-              <li>Anthropic (Claude 3, Claude 2)</li>
-              <li>Google (Gemini Pro, PaLM 2)</li>
-              <li>Meta (Llama 2)</li>
-              <li>Mistral AI</li>
-              <li>Cohere</li>
+              <li v-for="(item, index) in $t('aboutDialog.supportedProviders.items')" :key="index">
+                {{ item }}
+              </li>
             </ul>
             
-            <h4 class="text-h6 mb-3">Features</h4>
+            <h4 class="text-h6 mb-3">{{ $t('aboutDialog.features.title') }}</h4>
             <ul class="mb-4">
-              <li>Fast approval process</li>
-              <li>Enterprise-grade security</li>
-              <li>Multiple provider support</li>
-              <li>Secure email delivery</li>
-              <li>Professional support</li>
+              <li v-for="(item, index) in $t('aboutDialog.features.items')" :key="index">
+                {{ item }}
+              </li>
             </ul>
             
             <p class="text-body-2 text-medium-emphasis">
-              For technical support or questions, please contact our team.
+              {{ $t('aboutDialog.footer') }}
             </p>
           </div>
         </v-card-text>
@@ -136,7 +136,7 @@
             variant="elevated"
             @click="showAbout = false"
           >
-            Close
+            {{ $t('aboutDialog.button') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -158,19 +158,20 @@
 import HeroSection from './components/HeroSection.vue'
 import ProcessTimeline from './components/ProcessTimeline.vue'
 import KeyRequestForm from './components/KeyRequestForm.vue'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
 
 export default {
   name: 'App',
   components: {
     HeroSection,
     ProcessTimeline,
-    KeyRequestForm
+    KeyRequestForm,
+    LanguageSwitcher
   },
   data() {
     return {
       showAbout: false,
       showScrollTop: false,
-      featuredProviders: ['OpenAI', 'Anthropic', 'Google', 'Meta', 'Mistral', 'Cohere'],
       currentYear: new Date().getFullYear()
     }
   },

@@ -5,12 +5,11 @@
         <!-- Hero Content -->
         <v-col cols="12" md="8" lg="6" class="text-center">
           <h1 class="hero-title text-h2 text-md-h1 font-weight-bold mb-6">
-            Streamline Your LLM API Access
+            {{ $t('hero.title') }}
           </h1>
           
           <p class="hero-subtitle text-h6 text-md-h5 mb-8 text-medium-emphasis">
-            Get secure API keys for leading language models with our simple, 
-            fast approval process. Connect to OpenAI, Anthropic, Google, and more.
+            {{ $t('hero.subtitle') }}
           </p>
           
           <v-btn
@@ -21,7 +20,7 @@
             @click="scrollToForm"
           >
             <v-icon start>mdi-rocket-launch</v-icon>
-            Request Your Key
+            {{ $t('hero.cta') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -30,10 +29,10 @@
       <v-row class="mt-16" justify="center">
         <v-col cols="12" class="text-center mb-8">
           <h2 class="text-h4 font-weight-bold mb-4">
-            Why Choose Our Platform?
+            {{ $t('hero.benefitsTitle') }}
           </h2>
           <p class="text-h6 text-medium-emphasis">
-            Professional API key management made simple
+            {{ $t('hero.benefitsSubtitle') }}
           </p>
         </v-col>
         
@@ -75,28 +74,28 @@
 <script>
 export default {
   name: 'HeroSection',
-  data() {
-    return {
-      benefits: [
+  computed: {
+    benefits() {
+      return [
         {
           icon: 'mdi-clock-fast',
-          title: 'Fast Approval',
-          description: 'Get your API keys quickly with our streamlined approval process. Most requests processed within 24 hours.'
+          title: this.$t('hero.benefits.fast.title'),
+          description: this.$t('hero.benefits.fast.description')
         },
         {
           icon: 'mdi-shield-check',
-          title: 'Secure Access',
-          description: 'Enterprise-grade security with encrypted key delivery and secure access management protocols.'
+          title: this.$t('hero.benefits.secure.title'),
+          description: this.$t('hero.benefits.secure.description')
         },
         {
           icon: 'mdi-server-network',
-          title: 'Multiple Providers',
-          description: 'Access keys for all major LLM providers including OpenAI, Anthropic, Google, Meta, and more.'
+          title: this.$t('hero.benefits.multiple.title'),
+          description: this.$t('hero.benefits.multiple.description')
         },
         {
           icon: 'mdi-email-fast',
-          title: 'Email Delivery',
-          description: 'Secure key delivery directly to your inbox with detailed setup instructions and usage guidelines.'
+          title: this.$t('hero.benefits.email.title'),
+          description: this.$t('hero.benefits.email.description')
         }
       ]
     }

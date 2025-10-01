@@ -4,10 +4,10 @@
       <v-row justify="center">
         <v-col cols="12" class="text-center mb-12">
           <h2 class="text-h3 font-weight-bold mb-4">
-            How It Works
+            {{ $t('timeline.title') }}
           </h2>
           <p class="text-h6 text-medium-emphasis">
-            Get your LLM API key in three simple steps
+            {{ $t('timeline.subtitle') }}
           </p>
         </v-col>
       </v-row>
@@ -52,7 +52,7 @@
                     <div class="step-content mt-6">
                       <div class="step-number mb-2">
                         <span class="text-h5 font-weight-bold text-primary">
-                          Step {{ index + 1 }}
+                          {{ $t('common.step') }} {{ index + 1 }}
                         </span>
                       </div>
                       
@@ -73,7 +73,7 @@
                         class="mt-2"
                       >
                         <v-icon start size="16">mdi-check</v-icon>
-                        Complete
+                        {{ $t('timeline.status.complete') }}
                       </v-chip>
                       
                       <v-chip
@@ -84,7 +84,7 @@
                         class="mt-2"
                       >
                         <v-icon start size="16">mdi-clock</v-icon>
-                        Current
+                        {{ $t('timeline.status.current') }}
                       </v-chip>
                       
                       <v-chip
@@ -95,7 +95,7 @@
                         class="mt-2"
                       >
                         <v-icon start size="16">mdi-circle-outline</v-icon>
-                        Pending
+                        {{ $t('timeline.status.pending') }}
                       </v-chip>
                     </div>
                   </div>
@@ -131,7 +131,7 @@
                   <v-card-text>
                     <div class="d-flex align-center mb-2">
                       <span class="text-h6 font-weight-bold text-primary me-3">
-                        Step {{ index + 1 }}
+                        {{ $t('common.step') }} {{ index + 1 }}
                       </span>
                       
                       <v-chip
@@ -141,7 +141,7 @@
                         size="small"
                       >
                         <v-icon start size="14">mdi-check</v-icon>
-                        Complete
+                        {{ $t('timeline.status.complete') }}
                       </v-chip>
                       
                       <v-chip
@@ -151,7 +151,7 @@
                         size="small"
                       >
                         <v-icon start size="14">mdi-clock</v-icon>
-                        Current
+                        {{ $t('timeline.status.current') }}
                       </v-chip>
                       
                       <v-chip
@@ -161,7 +161,7 @@
                         size="small"
                       >
                         <v-icon start size="14">mdi-circle-outline</v-icon>
-                        Pending
+                        {{ $t('timeline.status.pending') }}
                       </v-chip>
                     </div>
                     
@@ -184,7 +184,7 @@
       <v-row justify="center" class="mt-8">
         <v-col cols="12" class="text-center">
           <p class="text-h6 mb-4">
-            Ready to get started?
+            {{ $t('timeline.cta.title') }}
           </p>
           <v-btn
             size="large"
@@ -193,7 +193,7 @@
             @click="scrollToForm"
           >
             <v-icon start>mdi-form-select</v-icon>
-            Start Your Request
+            {{ $t('timeline.cta.button') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -211,26 +211,26 @@ export default {
       validator: (value) => value >= 0 && value <= 2
     }
   },
-  data() {
-    return {
-      steps: [
+  computed: {
+    steps() {
+      return [
         {
           id: 1,
           icon: 'mdi-form-select',
-          title: 'Submit Request',
-          description: 'Fill out the form with your preferred LLM provider and email address. Choose from OpenAI, Anthropic, Google, and more.'
+          title: this.$t('timeline.steps.step1.title'),
+          description: this.$t('timeline.steps.step1.description')
         },
         {
           id: 2,
           icon: 'mdi-check-circle',
-          title: 'Admin Approval',
-          description: 'Our team reviews and approves your request. We verify your information and ensure compliance with provider terms.'
+          title: this.$t('timeline.steps.step2.title'),
+          description: this.$t('timeline.steps.step2.description')
         },
         {
           id: 3,
           icon: 'mdi-email',
-          title: 'Receive Key',
-          description: 'Get your API key delivered securely via email with detailed setup instructions and usage guidelines.'
+          title: this.$t('timeline.steps.step3.title'),
+          description: this.$t('timeline.steps.step3.description')
         }
       ]
     }

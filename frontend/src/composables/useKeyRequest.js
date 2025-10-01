@@ -1,8 +1,12 @@
 // Vue 3 composable for key request state management
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiService, ApiError } from '../services/api.js'
 
 export function useKeyRequest() {
+  // i18n instance
+  const { t } = useI18n()
+  
   // Reactive state
   const formData = ref({
     llm: '',
@@ -51,14 +55,14 @@ export function useKeyRequest() {
     return errors
   }
 
-  // Email validation rules for Vuetify
+  // Email validation rules for Vuetify (with i18n)
   const emailRules = [
-    (value) => !!value || 'Email is required',
-    (value) => isValidEmail(value) || 'Please enter a valid email address'
+    (value) => !!value || t('form.validation.emailRequired'),
+    (value) => isValidEmail(value) || t('form.validation.emailInvalid')
   ]
 
   const llmRules = [
-    (value) => !!value || 'Please select an LLM provider'
+    (value) => !!value || t('form.validation.llmRequired')
   ]
 
   // Fetch models from API
@@ -107,7 +111,7 @@ export function useKeyRequest() {
 
       // Handle successful response
       success.value = true
-      responseMessage.value = response.message || 'Request submitted successfully!'
+      responseMessage.value = response.message || t('form.messages.defaultSuccess')
       
       // Optionally reset form after successful submission
       // resetForm()
