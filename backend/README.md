@@ -115,7 +115,7 @@ The backend implements a Kubernetes-based key request system with automated appr
    - Returns request ID to user
 4. Background processor (every 30s):
    - Fetches all `pending` requests
-   - Calls approval service (currently auto-approves)
+   - Calls approval service with plugin chain
    - For approved requests:
      - Generates API key via LiteLLM
      - Updates secret with `approved` state and API key
@@ -123,6 +123,180 @@ The backend implements a Kubernetes-based key request system with automated appr
    - For denied requests:
      - Updates secret with `denied` state
      - Sends denial email with reason
+
+## Approval Plugins
+
+The system uses a plugin-based approval mechanism that evaluates requests through a chain of responsibility pattern. Configure plugins in `config.yaml` under the `approvals` section.
+
+### How It Works
+
+- Plugins are evaluated in the order they are configured
+- Each plugin returns: `APPROVE`, `DENY`, or `CONTINUE`
+- If a plugin returns `APPROVE` or `DENY`, evaluation stops immediately
+- If all plugins return `CONTINUE`, the request is **denied by default**
+
+### Available Plugins
+
+#### HTTP Plugin
+
+Query an external HTTP endpoint for approval decisions. Useful for integrating with existing approval systems or custom workflows.
+
+**Configuration:**
+```yaml
+approval_plugins:
+  - name: http
+    config:
+      endpoint: "https://example.com/api/approve"
+```
+
+**Endpoint Requirements:**
+- Method: POST
+- Request Body: `{"email": "user@example.com", "model": "gpt-4", "request_id": "abc123"}`
+- Response: `{"decision": "APPROVE"}` or `{"decision": "DENY"}` or `{"decision": "CONTINUE"}`
+- On error or timeout (5s default), returns `CONTINUE`
+
+#### Blacklist Plugin
+
+Deny requests for models matching specified patterns. Useful for blocking access to expensive or restricted models.
+
+**Configuration:**
+```yaml
+approval_plugins:
+  - name: blacklist
+    config:
+      list:
+        - "anthropic/*"      # Block all Anthropic models
+        - "google/*"         # Block all Google models
+        - "gpt-4*"           # Block GPT-4 variants
+```
+
+**Behavior:**
+- Match: Returns `DENY`
+- No match: Returns `CONTINUE`
+- Supports wildcards: `*` (any characters), `?` (single character)
+
+#### Whitelist Plugin
+
+Approve requests for models matching specified patterns. Useful for auto-approving access to specific models.
+
+**Configuration:**
+```yaml
+approval_plugins:
+  - name: whitelist
+    config:
+      list:
+        - "ollama/*"         # Auto-approve all Ollama models
+        - "llama-*"          # Auto-approve all Llama models
+        - "mistral-7b"       # Auto-approve specific model
+```
+
+**Behavior:**
+- Match: Returns `APPROVE`
+- No match: Returns `CONTINUE`
+- Supports wildcards: `*` (any characters), `?` (single character)
+
+#### Email Plugin
+
+Approve or deny requests based on email domain pattern matching. Useful for allowing access only to specific domains.
+
+**Configuration:**
+```yaml
+approval_plugins:
+  - name: email
+    config:
+      pattern: "*@example.com"
+```
+
+**Behavior:**
+- Match: Returns `APPROVE`
+- No match: Returns `DENY`
+- Supports wildcards: `*` (any characters), `?` (single character)
+
+### Example Configurations
+
+**Simple Whitelist:**
+```yaml
+approval_plugins:
+  # Only approve Ollama models
+  - name: whitelist
+    config:
+      list:
+        - "ollama/*"
+```
+
+**Combined Approach:**
+```yaml
+approval_plugins:
+  # First, check external approval system
+  - name: http
+    config:
+      endpoint: "https://approval-service.company.com/api/approve"
+  
+  # Block expensive models
+  - name: blacklist
+    config:
+      list:
+        - "gpt-4"
+        - "claude-3"
+  
+  # Auto-approve cheap models
+  - name: whitelist
+    config:
+      list:
+        - "ollama/*"
+        - "mistral-7b"
+  
+  # Require company email for any remaining requests
+  - name: email
+    config:
+      pattern: "*@company.com"
+```
+
+**Email-based Access Control:**
+```yaml
+approval_plugins:
+  # Only allow company employees
+  - name: email
+    config:
+      pattern: "*@company.com"
+```
+
+### Plugin Evaluation Example
+
+Given this configuration:
+```yaml
+approval_plugins:
+  - name: blacklist
+    config:
+      list: ["gpt-4*"]
+  - name: whitelist
+    config:
+      list: ["ollama/*"]
+  - name: email
+    config:
+      pattern: "*@company.com"
+```
+
+Request: `email="user@company.com", model="gpt-4"`
+1. Blacklist plugin: model matches "gpt-4*" → **DENY** → Request denied
+
+Request: `email="user@company.com", model="ollama/llama2"`
+1. Blacklist plugin: no match → CONTINUE
+2. Whitelist plugin: model matches "ollama/*" → **APPROVE** → Request approved
+
+Request: `email="user@company.com", model="claude-3"`
+1. Blacklist plugin: no match → CONTINUE
+2. Whitelist plugin: no match → CONTINUE
+3. Email plugin: email matches "*@company.com" → **APPROVE** → Request approved
+
+Request: `email="user@gmail.com", model="claude-3"`
+1. Blacklist plugin: no match → CONTINUE
+2. Whitelist plugin: no match → CONTINUE
+3. Email plugin: email doesn't match "*@company.com" → **DENY** → Request denied
+
+### No Plugins Configured
+
+If no plugins are configured in `config.yaml`, **all requests will be denied by default** with the reason "No approval plugins configured".
 
 ### Manual Intervention
 

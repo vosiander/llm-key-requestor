@@ -151,7 +151,49 @@ Thank you for your understanding.
         msg.attach(part2)
         
         return msg
-    
+
+    async def notify(self, email: str, message: str) -> bool:
+        """
+        Generic email sender.
+
+        Args:
+            email: Recipient email address
+            message: str message (Subject/Body set). 'To' will be enforced.
+
+        Returns:
+            True if sent successfully, False otherwise.
+        """
+        try:
+            msg = MIMEMultipart()
+            msg['Subject'] = "Notification"
+            msg['From'] = self.config.smtp_from
+            msg.attach(MIMEText(message, 'plain'))
+            msg['To'] = email
+
+            smtp_kwargs = {
+                'hostname': self.config.smtp_host,
+                'port': self.config.smtp_port,
+            }
+
+            if self.config.smtp_port == 587:
+                smtp_kwargs['start_tls'] = True
+            elif self.config.smtp_port == 465:
+                smtp_kwargs['use_tls'] = True
+            elif self.config.smtp_use_tls:
+                smtp_kwargs['use_tls'] = True
+
+            if self.config.smtp_user and self.config.smtp_password:
+                smtp_kwargs['username'] = self.config.smtp_user
+                smtp_kwargs['password'] = self.config.smtp_password
+
+            await aiosmtplib.send(msg, **smtp_kwargs)
+            logger.info(f"Email notification sent to {email}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send email notification to {email}: {e}")
+            return False
+
+
     async def send_approval_notification(self, email: str, model: str, api_key: str, gateway_url: str) -> bool:
         """
         Send approval email with API key.

@@ -14,7 +14,7 @@ from src.models.key_request import KeyRequestState
 
 # Initialize services
 k8s_service = KubernetesSecretService(namespace=config_manager.get_kubernetes_namespace())
-approval_service = ApprovalService()
+approval_service = ApprovalService(plugins=config_manager.get_approval_plugins())
 email_service = EmailService(config=config_manager.get_smtp_config())
 key_manager = KeyManagement()
 

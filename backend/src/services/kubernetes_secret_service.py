@@ -206,7 +206,7 @@ class KubernetesSecretService:
                     logger.error(f"Error parsing secret {secret.metadata.name}: {e}")
                     continue
             
-            logger.info(f"Found {len(results)} secrets with state {state.value}")
+            logger.trace(f"Found {len(results)} secrets with state {state.value}")
             return results
             
         except ApiException as e:

@@ -64,4 +64,42 @@ models:
 approval:
   # Queue processing interval (can be overridden by APPROVAL_QUEUE_INTERVAL env var)
   # Supported formats: "30s", "1m", "5m", etc.
-  queue_interval: "30s"
+  queue_interval: "5m"
+
+# Approval Plugins Configuration
+# Plugins are dynamically loaded based on configuration and evaluated in sequence.
+# Each plugin returns APPROVE, DENY, or CONTINUE.
+# If a plugin returns APPROVE or DENY, evaluation stops immediately.
+# If all plugins return CONTINUE, the request is denied by default.
+approval_plugins:
+  # Example configurations (uncomment and configure as needed):
+  
+  # HTTP Plugin: Query an external HTTP endpoint for approval decisions
+  # - name: http
+  #   config:
+  #     endpoint: "https://example.com/api/approve"
+
+  # Human in the Loop Plugin: Send requests for manual approval via email
+  #- name: humanintheloop
+  #  config:
+  #    email: "bla@example.com"
+  #    patterns:
+  #      - "claude*"
+  
+  # Blacklist Plugin: Deny requests matching model patterns
+  #- name: blacklist
+  #  config:
+  #    list:
+  #      - "grok/*"
+
+  # Whitelist Plugin: Approve requests matching model patterns
+  # - name: whitelist
+  #   config:
+  #     list:
+  #       - "ollama/*"
+  #       - "llama-*"
+  
+  # Email Plugin: Approve/deny based on email pattern
+  # - name: email
+  #   config:
+  #     pattern: "*@example.com"

@@ -10,6 +10,7 @@ class KeyRequestState(str, Enum):
     PENDING = "pending"
     APPROVED = "approved"
     DENIED = "denied"
+    REVIEW = "in-review"
 
 
 class ApprovalResponse(BaseModel):

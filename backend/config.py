@@ -9,10 +9,37 @@ import requests
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
+from injector import Injector, Module, provider
 
 from src.models.key_request import EmailConfig
+from src.services.approval_plugins.base import ApprovalPlugin
+from src.services.email_service import EmailService
+import importlib
 
 logger = logging.getLogger(__name__)
+
+
+class ConfigModule(Module):
+    """Injector module for providing configured services."""
+    
+    def __init__(self, config_manager):
+        """
+        Initialize the config module.
+        
+        Args:
+            config_manager: ConfigManager instance to get configuration from
+        """
+        self.config_manager = config_manager
+    
+    @provider
+    def provide_email_service(self) -> EmailService:
+        """
+        Provide configured EmailService instance.
+        
+        Returns:
+            EmailService configured with SMTP settings from config
+        """
+        return EmailService(config=self.config_manager.get_smtp_config())
 
 
 class LLMModel(BaseModel):
@@ -73,6 +100,9 @@ class ConfigManager:
         self.settings = Config()
         self._config_data = None
         self._load_config()
+        
+        # Set up dependency injection
+        self.injector = Injector([ConfigModule(self)])
     
     def _load_config(self):
         """Load configuration from YAML file."""
@@ -220,6 +250,101 @@ class ConfigManager:
         yaml_k8s = self._config_data.get('kubernetes', {})
         namespace = os.getenv('KUBERNETES_NAMESPACE', yaml_k8s.get('namespace', ''))
         return namespace if namespace else None
+    
+    def get_approval_plugins(self) -> list[ApprovalPlugin]:
+        """
+        Get list of configured approval plugins using dynamic loading.
+        
+        Plugins are loaded dynamically from configuration based on plugin name.
+        Each plugin must follow the naming convention:
+        - Module: src.services.approval_plugins.{name}_plugin
+        - Class: {Name}ApprovalPlugin (with capitalized first letter)
+        
+        Returns:
+            List of ApprovalPlugin instances configured in YAML.
+            Returns empty list if no plugins configured.
+        """
+        plugins_config = self._config_data.get('approval_plugins', [])
+        
+        if not plugins_config:
+            logger.warning("No approval plugins configured - all requests will be denied by default")
+            return []
+        
+        plugins = []
+        for plugin_def in plugins_config:
+            try:
+                plugin_name = plugin_def.get('name')
+                plugin_config = plugin_def.get('config', {})
+                
+                if not plugin_name:
+                    logger.error(f"Plugin definition missing 'name' field: {plugin_def}")
+                    continue
+                
+                # Dynamically load plugin
+                plugin = self._load_plugin(plugin_name, plugin_config)
+                plugins.append(plugin)
+                logger.info(f"Loaded plugin: {plugin.__class__.__name__}")
+                
+            except Exception as e:
+                logger.error(f"Failed to load approval plugin from config {plugin_def}: {e}", exc_info=True)
+        
+        logger.info(f"Loaded {len(plugins)} approval plugins")
+        return plugins
+    
+    def _load_plugin(self, plugin_name: str, plugin_config: dict) -> ApprovalPlugin:
+        """
+        Dynamically load and instantiate a plugin by name with dependency injection.
+        
+        Args:
+            plugin_name: Name of the plugin (e.g., 'http', 'blacklist')
+            plugin_config: Configuration dictionary for the plugin
+            
+        Returns:
+            ApprovalPlugin instance
+            
+        Raises:
+            ImportError: If plugin module cannot be imported
+            AttributeError: If plugin class cannot be found
+            Exception: If plugin instantiation fails
+        """
+        # Convert plugin name to module name: 'http' -> 'http_plugin'
+        module_name = f'src.services.approval_plugins.{plugin_name}_plugin'
+        
+        # Convert plugin name to class name: 'http' -> 'HttpApprovalPlugin'
+        class_name = f'{plugin_name.capitalize()}ApprovalPlugin'
+        
+        try:
+            # Dynamically import the module
+            module = importlib.import_module(module_name)
+            
+            # Get the plugin class from the module
+            plugin_class = getattr(module, class_name)
+            
+            # Create plugin instance with dependency injection
+            # This handles @inject decorated dependencies
+            plugin = self.injector.create_object(plugin_class)
+            
+            # Set configuration parameters from YAML on the plugin instance
+            for key, value in plugin_config.items():
+                setattr(plugin, key, value)
+            
+            return plugin
+            
+        except ImportError as e:
+            raise ImportError(
+                f"Failed to import plugin module '{module_name}'. "
+                f"Ensure the plugin file exists at src/services/approval_plugins/{plugin_name}_plugin.py"
+            ) from e
+        except AttributeError as e:
+            raise AttributeError(
+                f"Plugin class '{class_name}' not found in module '{module_name}'. "
+                f"Ensure the class is named correctly."
+            ) from e
+        except Exception as e:
+            raise Exception(
+                f"Failed to instantiate plugin '{class_name}' with config {plugin_config}. "
+                f"Error: {str(e)}"
+            ) from e
 
 
 # Global config manager instance

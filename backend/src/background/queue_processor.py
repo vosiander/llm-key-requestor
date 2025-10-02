@@ -170,6 +170,16 @@ class QueueProcessor:
             elif approval_response.state == KeyRequestState.PENDING:
                 # Still pending, continue to next request
                 logger.info(f"Request {request.request_id} still pending, will retry in next cycle")
+
+            elif approval_response.state == KeyRequestState.REVIEW:
+                # Still pending, continue to next request
+                logger.info(f"Request {request.request_id} requested for review")
+
+                # Update secret with review state
+                await self.k8s_service.update(
+                    request.request_id,
+                    state=KeyRequestState.REVIEW,
+                )
             
         except Exception as e:
             logger.error(f"Error processing request {request.request_id}: {e}", exc_info=True)
