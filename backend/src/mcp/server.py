@@ -1,7 +1,6 @@
 """MCP server creation and configuration."""
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.auth.settings import AuthSettings
+from fastmcp import FastMCP
 from loguru import logger
 from src.services.kubernetes_secret_service import KubernetesSecretService
 from .tools import (

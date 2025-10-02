@@ -17,7 +17,7 @@ class ApprovalService:
         self.plugins = plugins
         logger.info(f"ApprovalService initialized with {len(plugins)} plugins")
     
-    async def approve(self, email: str, model: str, request_id: str) -> ApprovalResponse:
+    async def process(self, email: str, model: str, request_id: str) -> ApprovalResponse:
         """
         Process approval request through plugin chain.
         

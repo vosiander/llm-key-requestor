@@ -16,5 +16,5 @@ dependencies = [
     "kubernetes",
     "aiosmtplib",
     "loguru",
-    "mcp[cli]>=1.1.0"
+    "fastmcp",
 ]

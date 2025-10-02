@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from loguru import logger
-from mcp.server.fastmcp import Context
+from fastmcp.server import Context
 
 from src.models.key_request import KeyRequestState
 from src.services.kubernetes_secret_service import KubernetesSecretService

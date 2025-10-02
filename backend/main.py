@@ -87,18 +87,18 @@ async def lifespan(app: FastAPI):
     """
     # Startup logic
     logger.info("Starting application...")
-    queue_processor.start()
     
-    # Run within MCP session manager context
-    logger.info("Starting MCP session manager...")
-    async with mcp_server.session_manager.run():
+    # Start the MCP app's lifespan context
+    async with mcp_app.lifespan(mcp_app):
+        queue_processor.start()
         logger.info("Application started successfully")
+        
         yield  # Application runs here
+        
         logger.info("Shutting down application...")
-    
-    # Shutdown logic
-    await queue_processor.stop()
-    logger.info("Application shutdown complete")
+        # Shutdown logic
+        await queue_processor.stop()
+        logger.info("Application shutdown complete")
 
 
 app = FastAPI(title="LLM Key Requestor API", lifespan=lifespan)

@@ -81,7 +81,7 @@ class QueueProcessor:
             logger.info(f"Processing request {request.request_id} for {request.email}")
             
             # Get approval decision
-            approval_response = await self.approval_service.approve(
+            approval_response = await self.approval_service.process(
                 email=request.email,
                 model=request.model,
                 request_id=request.request_id
