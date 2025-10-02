@@ -11,7 +11,8 @@ from .tools import (
     deny_request,
     set_pending,
     set_review,
-    request_new_key
+    request_new_key,
+    get_available_models
 )
 
 def create_mcp_server(k8s_service: KubernetesSecretService,) -> FastMCP:
@@ -68,5 +69,10 @@ def create_mcp_server(k8s_service: KubernetesSecretService,) -> FastMCP:
         """Create a new key request. Does not require authentication."""
         return await request_new_key(email, model, k8s_service)
     
-    logger.info("MCP server created successfully with 7 tools")
+    @mcp.tool()
+    def list_models() -> list[dict]:
+        """Get list of available LLM models with metadata. Does not require authentication."""
+        return get_available_models()
+    
+    logger.info("MCP server created successfully with 8 tools")
     return mcp

@@ -6,6 +6,7 @@ from mcp.server.fastmcp import Context
 
 from src.models.key_request import KeyRequestState
 from src.services.kubernetes_secret_service import KubernetesSecretService
+from config import config_manager
 
 async def list_pending_requests(ctx: Context, k8s_service: KubernetesSecretService) -> list[dict]:
     """
@@ -297,4 +298,38 @@ async def request_new_key(email: str, model: str, k8s_service: KubernetesSecretS
         
     except Exception as e:
         logger.error(f"Error creating key request for {email}: {e}", exc_info=True)
+        raise
+
+
+def get_available_models() -> list[dict]:
+    """
+    Get list of available LLM models with metadata.
+    
+    Returns merged models from local configuration and LiteLLM (if enabled).
+    This tool does not require authentication.
+    
+    Returns:
+        List of available models with their metadata (id, title, icon, color, description)
+    """
+    logger.info("Fetching available models")
+    
+    try:
+        models = config_manager.get_all_models()
+        
+        result = [
+            {
+                "id": model.id,
+                "title": model.title,
+                "icon": model.icon,
+                "color": model.color,
+                "description": model.description
+            }
+            for model in models
+        ]
+        
+        logger.info(f"Found {len(result)} available models")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error fetching available models: {e}", exc_info=True)
         raise
