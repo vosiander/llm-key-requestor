@@ -1,9 +1,9 @@
 """Configuration management for LLM Key Requestor."""
 
-import logging
 import os
 from pathlib import Path
 from typing import Optional
+from loguru import logger
 
 import requests
 import yaml
@@ -15,8 +15,6 @@ from src.models.key_request import EmailConfig
 from src.services.approval_plugins.base import ApprovalPlugin
 from src.services.email_service import EmailService
 import importlib
-
-logger = logging.getLogger(__name__)
 
 
 class ConfigModule(Module):
@@ -250,18 +248,6 @@ class ConfigManager:
         yaml_k8s = self._config_data.get('kubernetes', {})
         namespace = os.getenv('KUBERNETES_NAMESPACE', yaml_k8s.get('namespace', ''))
         return namespace if namespace else None
-    
-    def get_mcp_config(self) -> MCPConfig:
-        """
-        Get MCP configuration with environment variable overrides.
-        
-        Environment variables take precedence over YAML values.
-        """
-        yaml_mcp = self._config_data.get('mcp', {})
-        
-        return MCPConfig(
-            admin_api_key=os.getenv('MCP_ADMIN_API_KEY', yaml_mcp.get('admin_api_key', ''))
-        )
     
     def get_approval_plugins(self) -> list[ApprovalPlugin]:
         """

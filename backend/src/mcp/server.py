@@ -14,17 +14,13 @@ from .tools import (
     request_new_key
 )
 
-def create_mcp_server(
-    k8s_service: KubernetesSecretService,
-    admin_api_key: str
-) -> FastMCP:
+def create_mcp_server(k8s_service: KubernetesSecretService,) -> FastMCP:
     """
     Create and configure an MCP server for LLM Key Requestor administration.
     
     Args:
         k8s_service: Kubernetes secret service for managing key requests
-        admin_api_key: Admin API key for authentication
-        
+
     Returns:
         Configured FastMCP server instance
     """

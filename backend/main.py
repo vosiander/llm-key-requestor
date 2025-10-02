@@ -64,15 +64,10 @@ queue_processor = QueueProcessor(
 )
 
 # Configure MCP server (before FastAPI app creation)
-mcp_config = config_manager.get_mcp_config()
-
 logger.info("Creating MCP server, will mount at /mcp")
 
 # Create MCP server
-mcp_server = create_mcp_server(
-    k8s_service=k8s_service,
-    admin_api_key=mcp_config.admin_api_key
-)
+mcp_server = create_mcp_server(k8s_service=k8s_service,)
 
 # Initialize the streamable HTTP app to create the session manager
 mcp_app = mcp_server.streamable_http_app()
