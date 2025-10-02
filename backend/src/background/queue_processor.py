@@ -3,22 +3,20 @@ import asyncio
 import re
 from typing import Optional
 from loguru import logger
+from injector import inject
 from config import config_manager
 from src.services.kubernetes_secret_service import KubernetesSecretService
 from src.services.approval_service import ApprovalService
-from src.services.email_service import EmailService
-from src.litellm.manager import KeyManagement
 from src.models.key_request import KeyRequestState, KeyRequestData
 
 class QueueProcessor:
     """Background task processor for pending key requests."""
     
+    @inject
     def __init__(
         self,
         k8s_service: KubernetesSecretService,
-        approval_service: ApprovalService,
-        email_service: EmailService,
-        key_manager: KeyManagement
+        approval_service: ApprovalService
     ):
         """
         Initialize queue processor with required services.
@@ -26,18 +24,11 @@ class QueueProcessor:
         Args:
             k8s_service: Kubernetes secret service
             approval_service: Approval service
-            email_service: Email notification service
-            key_manager: LiteLLM key management service
         """
         self.k8s_service = k8s_service
         self.approval_service = approval_service
-        self.email_service = email_service
-        self.key_manager = key_manager
         self.running = False
         self.task: Optional[asyncio.Task] = None
-        
-        # Get LiteLLM configuration
-        self.litellm_config = config_manager.get_litellm_config()
         
         logger.info("QueueProcessor initialized")
     
@@ -86,100 +77,9 @@ class QueueProcessor:
                 model=request.model,
                 request_id=request.request_id
             )
-
-            key_alias = f"user-{request.email}-{request.model}"
-
-            logger.info(
-                f"Approval response for {request.request_id} {key_alias}: "
-                f"state={approval_response.state.value}, reason={approval_response.reason}"
-            )
             
-            # Handle approval response based on state
-            if approval_response.state == KeyRequestState.APPROVED:
-                # Generate API key using LiteLLM
-                try:
-                    self.key_manager.delete_key(
-                        litellm_host=self.litellm_config.base_url,
-                        litellm_api_key=self.litellm_config.api_key,
-                        key_alias=key_alias,
-                    )
-                    logger.info(f"deleted API key for request {request.request_id}")
-
-                    api_key = self.key_manager.generate_key(
-                        litellm_host=self.litellm_config.base_url,
-                        litellm_api_key=self.litellm_config.api_key,
-                        user_id=request.email,
-                        key_alias=key_alias,
-                        key_name=f"{request.email} - {request.model}",
-                        models=[request.model]
-                    )
-                    
-                    logger.info(f"Generated API key for request {request.request_id}")
-                    
-                    # Send approval email with API key
-                    email_sent = await self.email_service.send_approval_notification(
-                        email=request.email,
-                        model=request.model,
-                        api_key=api_key,
-                        gateway_url=self.litellm_config.base_url
-                    )
-
-                    logger.info(f"Email sent: {email_sent}")
-
-                    # Update secret with approved state and API key
-                    await self.k8s_service.update(
-                        request.request_id,
-                        state=KeyRequestState.APPROVED,
-                        api_key=api_key
-                    )
-                    
-                except Exception as e:
-                    logger.error(f"Error generating API key for {request.request_id}: {e}", exc_info=True)
-                    # Update to denied state on key generation failure
-                    await self.k8s_service.update(
-                        request.request_id,
-                        state=KeyRequestState.DENIED
-                    )
-                    
-                    # Send denial email
-                    await self.email_service.send_denial_notification(
-                        email=request.email,
-                        model=request.model,
-                        reason=f"Failed to generate API key: {str(e)}"
-                    )
-            
-            elif approval_response.state == KeyRequestState.DENIED:
-                # Update to denied state
-                await self.k8s_service.update(
-                    request.request_id,
-                    state=KeyRequestState.DENIED
-                )
-                
-                # Send denial email
-                email_sent = await self.email_service.send_denial_notification(
-                    email=request.email,
-                    model=request.model,
-                    reason=approval_response.reason
-                )
-                
-                if email_sent:
-                    logger.info(f"Denial notification sent to {request.email}")
-                else:
-                    logger.warning(f"Failed to send denial notification to {request.email}")
-            
-            elif approval_response.state == KeyRequestState.PENDING:
-                # Still pending, continue to next request
-                logger.info(f"Request {request.request_id} still pending, will retry in next cycle")
-
-            elif approval_response.state == KeyRequestState.REVIEW:
-                # Still pending, continue to next request
-                logger.info(f"Request {request.request_id} requested for review")
-
-                # Update secret with review state
-                await self.k8s_service.update(
-                    request.request_id,
-                    state=KeyRequestState.REVIEW,
-                )
+            # Take action based on decision
+            await self.approval_service.take_action(approval_response, request)
             
         except Exception as e:
             logger.error(f"Error processing request {request.request_id}: {e}", exc_info=True)

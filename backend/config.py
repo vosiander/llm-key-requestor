@@ -2,19 +2,40 @@
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from loguru import logger
 
 import requests
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
-from injector import Injector, Module, provider
+from injector import Injector, Module, provider, singleton
 
 from src.models.key_request import EmailConfig
 from src.services.approval_plugins.base import ApprovalPlugin
 from src.services.email_service import EmailService
+from src.services.kubernetes_secret_service import KubernetesSecretService
+from src.litellm.manager import KeyManagement
+from src.services.approval_service import ApprovalService
 import importlib
+
+
+class LLMModel(BaseModel):
+    """Model representing an LLM provider configuration."""
+    
+    id: str
+    title: str
+    icon: str
+    color: str
+    description: str
+
+
+class LiteLLMConfig(BaseModel):
+    """LiteLLM backend configuration."""
+    
+    base_url: str = Field(default="http://localhost:4000")
+    api_key: str = Field(default="")
+    enable_litellm_models: bool = Field(default=True)
 
 
 class ConfigModule(Module):
@@ -38,24 +59,51 @@ class ConfigModule(Module):
             EmailService configured with SMTP settings from config
         """
         return EmailService(config=self.config_manager.get_smtp_config())
-
-
-class LLMModel(BaseModel):
-    """Model representing an LLM provider configuration."""
     
-    id: str
-    title: str
-    icon: str
-    color: str
-    description: str
-
-
-class LiteLLMConfig(BaseModel):
-    """LiteLLM backend configuration."""
+    @provider
+    def provide_litellm_config(self) -> LiteLLMConfig:
+        """
+        Provide LiteLLM configuration.
+        
+        Returns:
+            LiteLLMConfig instance from config manager
+        """
+        return self.config_manager.get_litellm_config()
     
-    base_url: str = Field(default="http://localhost:4000")
-    api_key: str = Field(default="")
-    enable_litellm_models: bool = Field(default=True)
+    
+    @provider
+    def provide_k8s_service(self) -> KubernetesSecretService:
+        """
+        Provide KubernetesSecretService instance.
+        
+        Returns:
+            KubernetesSecretService configured with namespace from config
+        """
+        return KubernetesSecretService(namespace=self.config_manager.get_kubernetes_namespace())
+    
+    @provider
+    @singleton
+    def provide_approval_service(
+        self,
+        k8s_service: KubernetesSecretService,
+        email_service: EmailService,
+        key_manager: KeyManagement,
+        litellm_config: LiteLLMConfig
+    ) -> ApprovalService:
+        """
+        Provide ApprovalService instance with all dependencies.
+        
+        Returns:
+            ApprovalService configured with plugins and dependencies
+        """
+        plugins = self.config_manager.get_approval_plugins()
+        return ApprovalService(
+            plugins=plugins,
+            k8s_service=k8s_service,
+            email_service=email_service,
+            key_manager=key_manager,
+            litellm_config=litellm_config
+        )
 
 
 class Config(BaseSettings):

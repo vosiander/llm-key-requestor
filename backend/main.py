@@ -50,19 +50,12 @@ for logger_name in ["uvicorn", "uvicorn.access", "uvicorn.error", "fastapi", "mc
     logging_logger.handlers = [InterceptHandler()]
     logging_logger.propagate = False
 
-# Initialize services
-k8s_service = KubernetesSecretService(namespace=config_manager.get_kubernetes_namespace())
-approval_service = ApprovalService(plugins=config_manager.get_approval_plugins())
-email_service = EmailService(config=config_manager.get_smtp_config())
-key_manager = KeyManagement()
-
-# Initialize queue processor
-queue_processor = QueueProcessor(
-    k8s_service=k8s_service,
-    approval_service=approval_service,
-    email_service=email_service,
-    key_manager=key_manager
-)
+# Initialize services using dependency injection
+k8s_service = config_manager.injector.get(KubernetesSecretService)
+approval_service = config_manager.injector.get(ApprovalService)
+email_service = config_manager.injector.get(EmailService)
+key_manager = config_manager.injector.get(KeyManagement)
+queue_processor = config_manager.injector.get(QueueProcessor)
 
 # Configure MCP server (before FastAPI app creation)
 logger.info("Creating MCP server, will mount at /mcp")
