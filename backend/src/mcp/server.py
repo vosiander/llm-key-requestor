@@ -30,7 +30,7 @@ def create_mcp_server(k8s_service: KubernetesSecretService,) -> FastMCP:
         name="llm-key-requestor",
         instructions="MCP server for managing LLM API key requests",
         stateless_http=True,
-        streamable_http_path=""
+        streamable_http_path="/"
     )
 
     @mcp.tool()

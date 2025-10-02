@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import logging
@@ -101,6 +102,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="LLM Key Requestor API", lifespan=lifespan)
+
+# Add ProxyHeadersMiddleware to handle reverse proxy headers (X-Forwarded-Proto, etc.)
+# This ensures redirects preserve HTTPS when behind a reverse proxy
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 # Configure CORS
 app.add_middleware(
