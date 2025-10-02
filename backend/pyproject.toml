@@ -15,5 +15,6 @@ dependencies = [
     "injector",
     "kubernetes",
     "aiosmtplib",
-    "loguru"
+    "loguru",
+    "mcp[cli]>=1.1.0"
 ]

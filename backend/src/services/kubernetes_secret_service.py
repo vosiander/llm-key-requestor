@@ -128,7 +128,7 @@ class KubernetesSecretService:
             type='Opaque'
         )
     
-    async def find(self, request_id: str) -> Optional[KeyRequestData]:
+    async def find(self, request_id: str) -> KeyRequestData:
         """
         Find secret by request ID.
         

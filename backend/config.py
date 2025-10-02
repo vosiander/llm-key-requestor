@@ -251,6 +251,18 @@ class ConfigManager:
         namespace = os.getenv('KUBERNETES_NAMESPACE', yaml_k8s.get('namespace', ''))
         return namespace if namespace else None
     
+    def get_mcp_config(self) -> MCPConfig:
+        """
+        Get MCP configuration with environment variable overrides.
+        
+        Environment variables take precedence over YAML values.
+        """
+        yaml_mcp = self._config_data.get('mcp', {})
+        
+        return MCPConfig(
+            admin_api_key=os.getenv('MCP_ADMIN_API_KEY', yaml_mcp.get('admin_api_key', ''))
+        )
+    
     def get_approval_plugins(self) -> list[ApprovalPlugin]:
         """
         Get list of configured approval plugins using dynamic loading.

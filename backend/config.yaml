@@ -100,6 +100,6 @@ approval_plugins:
   #       - "llama-*"
   
   # Email Plugin: Approve/deny based on email pattern
-  # - name: email
-  #   config:
-  #     pattern: "*@example.com"
+  - name: email
+    config:
+      pattern: "*@example.com"

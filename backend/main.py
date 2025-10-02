@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+import logging
+import inspect
 from loguru import logger
 from config import config_manager, LLMModel
 from src.services.kubernetes_secret_service import KubernetesSecretService
@@ -11,6 +13,41 @@ from src.services.email_service import EmailService
 from src.litellm.manager import KeyManagement
 from src.background.queue_processor import QueueProcessor
 from src.models.key_request import KeyRequestState
+from src.mcp import create_mcp_server
+
+
+# Intercept standard logging and redirect to loguru
+class InterceptHandler(logging.Handler):
+    """
+    Handler to intercept standard logging and redirect to loguru.
+    This ensures all logs from libraries using standard logging (like FastMCP, uvicorn)
+    are formatted consistently with loguru.
+    """
+    def emit(self, record: logging.LogRecord) -> None:
+        # Get corresponding Loguru level if it exists
+        level: str | int
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message
+        frame, depth = inspect.currentframe(), 0
+        while frame and (depth == 0 or frame.f_code.co_filename == logging.__file__):
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+# Configure logging to intercept standard library logging
+logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
+
+# Intercept specific loggers that might be used by dependencies
+for logger_name in ["uvicorn", "uvicorn.access", "uvicorn.error", "fastapi", "mcp"]:
+    logging_logger = logging.getLogger(logger_name)
+    logging_logger.handlers = [InterceptHandler()]
+    logging_logger.propagate = False
 
 # Initialize services
 k8s_service = KubernetesSecretService(namespace=config_manager.get_kubernetes_namespace())
@@ -26,6 +63,21 @@ queue_processor = QueueProcessor(
     key_manager=key_manager
 )
 
+# Configure MCP server (before FastAPI app creation)
+mcp_config = config_manager.get_mcp_config()
+
+logger.info("Creating MCP server, will mount at /mcp")
+
+# Create MCP server
+mcp_server = create_mcp_server(
+    k8s_service=k8s_service,
+    admin_api_key=mcp_config.admin_api_key
+)
+
+# Initialize the streamable HTTP app to create the session manager
+mcp_app = mcp_server.streamable_http_app()
+logger.info("MCP server created successfully")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,16 +86,21 @@ async def lifespan(app: FastAPI):
     
     This replaces the deprecated @app.on_event("startup") and @app.on_event("shutdown")
     decorators with the modern lifespan approach.
+    
+    Integrates the MCP session manager's lifespan if enabled.
     """
     # Startup logic
     logger.info("Starting application...")
     queue_processor.start()
-    logger.info("Application started successfully")
     
-    yield  # Application runs here
+    # Run within MCP session manager context
+    logger.info("Starting MCP session manager...")
+    async with mcp_server.session_manager.run():
+        logger.info("Application started successfully")
+        yield  # Application runs here
+        logger.info("Shutting down application...")
     
     # Shutdown logic
-    logger.info("Shutting down application...")
     await queue_processor.stop()
     logger.info("Application shutdown complete")
 
@@ -57,6 +114,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_credentials=True,
 )
+
+# Mount MCP server at /mcp
+logger.info("Mounting MCP server at /mcp")
+app.mount("/mcp", mcp_app)
+logger.info("MCP server mounted successfully")
 
 
 class KeyRequest(BaseModel):
