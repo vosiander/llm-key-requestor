@@ -38,6 +38,12 @@ class LiteLLMConfig(BaseModel):
     enable_litellm_models: bool = Field(default=True)
 
 
+class MCPConfig(BaseModel):
+    """MCP server configuration."""
+    
+    api_key: str = Field(default="")
+
+
 class ConfigModule(Module):
     """Injector module for providing configured services."""
     
@@ -174,6 +180,18 @@ class ConfigManager:
             base_url=self.settings.litellm_base_url or yaml_config.get('base_url', 'http://localhost:4000'),
             api_key=self.settings.litellm_api_key or yaml_config.get('api_key', ''),
             enable_litellm_models=self.settings.enable_litellm_models if self.settings.enable_litellm_models is not None else yaml_config.get('enable_litellm_models', True)
+        )
+    
+    def get_mcp_config(self) -> MCPConfig:
+        """
+        Get MCP configuration with environment variable overrides.
+        
+        Environment variables take precedence over YAML values.
+        """
+        yaml_config = self._config_data.get('mcp', {})
+        
+        return MCPConfig(
+            api_key=os.getenv('MCP_API_KEY', yaml_config.get('api_key', ''))
         )
     
     def get_models(self) -> list[LLMModel]:

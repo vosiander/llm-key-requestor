@@ -1,5 +1,11 @@
 # LLM Key Requestor Configuration
 
+# MCP Server Configuration
+mcp:
+  # API key for MCP server authentication (can be overridden by MCP_API_KEY env var)
+  # IMPORTANT: Change this to a secure random value in production!
+  api_key: "change-me-to-a-secure-api-key"
+
 # LiteLLM Backend Configuration
 litellm:
   # Base URL for LiteLLM backend (can be overridden by LITELLM_BASE_URL env var)

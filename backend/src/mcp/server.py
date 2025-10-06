@@ -1,7 +1,9 @@
 """MCP server creation and configuration."""
 
 from fastmcp import FastMCP
+from fastmcp.server.auth.providers.jwt import StaticTokenVerifier
 from loguru import logger
+from config import config_manager
 from src.services.kubernetes_secret_service import KubernetesSecretService
 from .tools import (
     list_pending_requests,
@@ -26,11 +28,36 @@ def create_mcp_server(k8s_service: KubernetesSecretService,) -> FastMCP:
     """
     logger.info("Creating MCP server")
     
+    # Get MCP configuration for API key
+    mcp_config = config_manager.get_mcp_config()
+    
+    # Require API key for security
+    if not mcp_config.api_key:
+        error_msg = (
+            "No API key configured for MCP server. "
+            "Please set 'mcp.api_key' in config.yaml or MCP_API_KEY environment variable."
+        )
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+    
+    logger.info("Configuring MCP server with API key authentication")
+    # StaticTokenVerifier accepts tokens as a dict with token -> claims mapping
+    # For simple API key auth, we use a single token with basic client_id
+    auth_provider = StaticTokenVerifier(
+        tokens={
+            mcp_config.api_key: {
+                "client_id": "admin",
+                "scopes": ["admin"]
+            }
+        }
+    )
+    
     mcp = FastMCP(
         name="llm-key-requestor",
         instructions="MCP server for managing LLM API key requests",
         stateless_http=True,
-        streamable_http_path="/"
+        streamable_http_path="/",
+        auth=auth_provider
     )
 
     @mcp.tool()
