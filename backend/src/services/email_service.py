@@ -173,6 +173,7 @@ Thank you for your understanding.
             smtp_kwargs = {
                 'hostname': self.config.smtp_host,
                 'port': self.config.smtp_port,
+                'validate_certs': self.config.smtp_verify_ssl,
             }
 
             if self.config.smtp_start_tls:
@@ -213,6 +214,7 @@ Thank you for your understanding.
             smtp_kwargs = {
                 'hostname': self.config.smtp_host,
                 'port': self.config.smtp_port,
+                'validate_certs': self.config.smtp_verify_ssl,
             }
             
             if self.config.smtp_start_tls:
@@ -258,6 +260,7 @@ Thank you for your understanding.
             smtp_kwargs = {
                 'hostname': self.config.smtp_host,
                 'port': self.config.smtp_port,
+                'validate_certs': self.config.smtp_verify_ssl,
             }
             
             if self.config.smtp_start_tls:

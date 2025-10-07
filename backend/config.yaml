@@ -96,7 +96,7 @@ models:
 
 # SMTP Configuration
 # All settings can be overridden by environment variables:
-# SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SMTP_USE_TLS, SMTP_START_TLS
+# SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SMTP_USE_TLS, SMTP_START_TLS, SMTP_VERIFY_SSL
 smtp:
   host: "localhost"
   port: 587
@@ -107,6 +107,9 @@ smtp:
   use_tls: false
   # start_tls: Use STARTTLS to upgrade connection (typically for port 587)
   start_tls: true
+  # verify_ssl: Verify SSL certificates (set to false for self-signed certificates or hostname mismatches)
+  # WARNING: Only set to false in trusted internal networks
+  verify_ssl: false
 
 # Approval Queue Configuration
 approval:
