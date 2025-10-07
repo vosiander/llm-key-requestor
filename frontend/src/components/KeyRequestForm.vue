@@ -27,133 +27,101 @@
               </p>
             </div>
 
-            <!-- Success Message -->
-            <v-alert
-              v-if="hasSuccess"
-              type="success"
-              variant="tonal"
-              prominent
-              class="mb-6"
-            >
-              <template #title>
-                <div class="d-flex align-center">
-                  <v-icon class="me-2">mdi-check-circle</v-icon>
-                  {{ $t('form.messages.successTitle') }}
-                </div>
-              </template>
-              <p class="mb-0">{{ responseMessage }}</p>
-            </v-alert>
-
-            <!-- Error Message -->
-            <v-alert
-              v-if="hasError"
-              type="error"
-              variant="tonal"
-              prominent
-              closable
-              class="mb-6"
-              @click:close="clearMessages"
-            >
-              <template #title>
-                <div class="d-flex align-center">
-                  <v-icon class="me-2">mdi-alert-circle</v-icon>
-                  {{ $t('form.messages.errorTitle') }}
-                </div>
-              </template>
-              <p class="mb-0">{{ error }}</p>
-            </v-alert>
-
             <!-- Form -->
             <v-form
               ref="form"
               v-model="formValid"
               @submit.prevent="handleSubmit"
             >
-              <!-- Model Cards Section -->
-              <div class="mb-6">
-                <div class="d-flex align-center justify-space-between mb-4">
-                  <h3 class="text-h6 font-weight-medium">
-                    {{ $t('form.provider.title') }}
-                  </h3>
-                  <v-btn
-                    v-if="modelsError"
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    @click="fetchModels"
-                  >
-                    <v-icon start>mdi-refresh</v-icon>
-                    {{ $t('form.provider.retry') }}
-                  </v-btn>
-                </div>
+              <!-- Featured Models Section (Always Visible) -->
+              <div class="mb-8">
+                <h3 class="text-h6 font-weight-medium mb-2">
+                  {{ $t('form.featured.title') }}
+                </h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  {{ $t('form.featured.subtitle') }}
+                </p>
 
-                <!-- Loading State -->
-                <div v-if="isLoadingModels" class="text-center py-8">
+                <!-- Loading State for Featured Models -->
+                <div v-if="isLoadingFeatured" class="text-center py-8">
                   <v-progress-circular
                     indeterminate
                     color="primary"
                     size="48"
                   />
                   <p class="text-body-2 text-medium-emphasis mt-4">
-                    {{ $t('form.provider.loading') }}
+                    {{ $t('common.loading') }}
                   </p>
                 </div>
 
-                <!-- Error State -->
-                <v-alert
-                  v-else-if="modelsError"
-                  type="warning"
-                  variant="tonal"
-                  class="mb-4"
-                >
-                  <template #title>
-                    <div class="d-flex align-center">
-                      <v-icon class="me-2">mdi-alert</v-icon>
-                      {{ $t('form.provider.error') }}
-                    </div>
-                  </template>
-                  <p class="mb-0">{{ modelsError }}</p>
-                </v-alert>
-
-                <!-- Model Cards Grid -->
-                <v-row v-else class="model-cards-grid">
+                <!-- Featured Model Cards -->
+                <v-row v-else>
                   <v-col
-                    v-for="model in llmProviders"
+                    v-for="model in featuredModels"
                     :key="model.id"
                     cols="12"
-                    sm="6"
                     md="4"
-                    lg="3"
                   >
                     <v-card
-                      class="model-card"
-                      :class="{ 'model-card-selected': selectedModelId === model.id }"
+                      class="featured-card"
+                      :class="{ 'featured-card-selected': selectedModelId === model.id }"
                       variant="outlined"
                       hover
-                      :disabled="isLoading"
-                      @click="selectModel(model)"
+                      height="100%"
                     >
                       <v-card-text class="pa-4">
-                        <div class="d-flex flex-column align-center text-center">
+                        <div class="d-flex flex-column h-100 position-relative">
+                          <!-- Info Button - Top Right -->
+                          <v-btn
+                            icon
+                            variant="text"
+                            size="small"
+                            :href="model.documentation_link"
+                            target="_blank"
+                            class="info-btn-featured"
+                            @click.stop
+                          >
+                            <v-icon size="20">mdi-help-circle-outline</v-icon>
+                          </v-btn>
+                          
                           <!-- Icon -->
-                          <div class="model-icon-container mb-3">
+                          <div class="featured-icon-container mb-3">
                             <Icon
                               :icon="model.icon"
                               :style="{ color: model.color }"
-                              width="48"
-                              height="48"
+                              width="40"
+                              height="40"
                             />
                           </div>
                           
                           <!-- Title -->
-                          <h4 class="text-subtitle-1 font-weight-bold mb-2">
+                          <h4 class="text-h6 font-weight-bold mb-2">
                             {{ model.title }}
                           </h4>
                           
+                          <!-- Subtitle -->
+                          <p class="text-subtitle-2 text-primary mb-2">
+                            {{ model.subtitle }}
+                          </p>
+                          
                           <!-- Description -->
-                          <p class="text-body-2 text-medium-emphasis mb-0">
+                          <p class="text-body-2 text-medium-emphasis mb-4 flex-grow-1">
                             {{ model.description }}
                           </p>
+                          
+                          <!-- Actions -->
+                          <v-btn
+                            color="primary"
+                            variant="elevated"
+                            size="default"
+                            :disabled="isLoading"
+                            :loading="isLoading && selectedModelId === model.id"
+                            @click="selectFeaturedModel(model)"
+                            block
+                          >
+                            <v-icon start>mdi-check-circle</v-icon>
+                            {{ $t('form.featured.requestButton') }}
+                          </v-btn>
                         </div>
                       </v-card-text>
                     </v-card>
@@ -161,34 +129,139 @@
                 </v-row>
               </div>
 
-              <!-- LLM Model Input (Custom Entry) -->
-              <v-text-field
-                v-model="formData.llm"
-                :rules="llmRules"
-                :label="$t('form.fields.llm.label')"
-                :placeholder="$t('form.fields.llm.placeholder')"
-                variant="outlined"
-                prepend-inner-icon="mdi-robot"
-                class="mb-4"
-                :disabled="isLoading"
-                clearable
-                @input="onModelInputChange"
-              >
-                <template #append-inner>
-                  <v-tooltip location="top">
-                    <template #activator="{ props }">
-                      <v-icon
-                        v-bind="props"
-                        size="20"
-                        color="info"
+              <!-- Advanced Options Accordion -->
+              <v-expansion-panels class="mb-6">
+                <v-expansion-panel>
+                  <v-expansion-panel-title>
+                    <div class="d-flex align-center">
+                      <v-icon class="me-2">mdi-cog</v-icon>
+                      <span class="text-h6">{{ $t('form.advanced.title') }}</span>
+                    </div>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <!-- Model Input Field -->
+                    <v-text-field
+                      v-model="formData.llm"
+                      :rules="llmRules"
+                      :label="$t('form.fields.model.label')"
+                      :placeholder="$t('form.fields.model.placeholder')"
+                      variant="outlined"
+                      prepend-inner-icon="mdi-robot"
+                      class="mb-4 mt-4"
+                      :disabled="isLoading"
+                      clearable
+                      @input="onModelInputChange"
+                    >
+                      <template #append-inner>
+                        <v-tooltip location="top">
+                          <template #activator="{ props }">
+                            <v-icon
+                              v-bind="props"
+                              size="20"
+                              color="info"
+                            >
+                              mdi-information-outline
+                            </v-icon>
+                          </template>
+                          <span>{{ $t('form.fields.model.tooltip') }}</span>
+                        </v-tooltip>
+                      </template>
+                    </v-text-field>
+
+                    <!-- API-Fetched Model Cards Section -->
+                    <div>
+                      <div class="d-flex align-center justify-space-between mb-4">
+                        <h4 class="text-subtitle-1 font-weight-medium">
+                          {{ $t('form.provider.title') }}
+                        </h4>
+                        <v-btn
+                          v-if="modelsError"
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          @click="fetchModels"
+                        >
+                          <v-icon start>mdi-refresh</v-icon>
+                          {{ $t('form.provider.retry') }}
+                        </v-btn>
+                      </div>
+
+                      <!-- Loading State -->
+                      <div v-if="isLoadingModels" class="text-center py-8">
+                        <v-progress-circular
+                          indeterminate
+                          color="primary"
+                          size="48"
+                        />
+                        <p class="text-body-2 text-medium-emphasis mt-4">
+                          {{ $t('form.provider.loading') }}
+                        </p>
+                      </div>
+
+                      <!-- Error State -->
+                      <v-alert
+                        v-else-if="modelsError"
+                        type="warning"
+                        variant="tonal"
+                        class="mb-4"
                       >
-                        mdi-information-outline
-                      </v-icon>
-                    </template>
-                    <span>{{ $t('form.fields.llm.tooltip') }}</span>
-                  </v-tooltip>
-                </template>
-              </v-text-field>
+                        <template #title>
+                          <div class="d-flex align-center">
+                            <v-icon class="me-2">mdi-alert</v-icon>
+                            {{ $t('form.provider.error') }}
+                          </div>
+                        </template>
+                        <p class="mb-0">{{ modelsError }}</p>
+                      </v-alert>
+
+                      <!-- Model Cards Grid -->
+                      <v-row v-else class="model-cards-grid">
+                        <v-col
+                          v-for="model in llmProviders"
+                          :key="model.id"
+                          cols="12"
+                          sm="6"
+                          md="4"
+                          lg="3"
+                        >
+                          <v-card
+                            class="model-card"
+                            :class="{ 'model-card-selected': selectedModelId === model.id }"
+                            variant="outlined"
+                            hover
+                            :disabled="isLoading"
+                            @click="selectModel(model)"
+                          >
+                            <v-card-text class="pa-4">
+                              <div class="d-flex flex-column align-center text-center">
+                                <!-- Icon -->
+                                <div class="model-icon-container mb-3">
+                                  <Icon
+                                    :icon="model.icon"
+                                    :style="{ color: model.color }"
+                                    width="48"
+                                    height="48"
+                                  />
+                                </div>
+                                
+                                <!-- Title -->
+                                <h4 class="text-subtitle-1 font-weight-bold mb-2">
+                                  {{ model.title }}
+                                </h4>
+                                
+                                <!-- Description -->
+                                <p class="text-body-2 text-medium-emphasis mb-0">
+                                  {{ model.description }}
+                                </p>
+                              </div>
+                            </v-card-text>
+                          </v-card>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
 
               <!-- Email Input -->
               <v-text-field
@@ -272,6 +345,70 @@
         </v-col>
       </v-row>
     </v-container>
+
+    <!-- Success Modal -->
+    <v-dialog
+      v-model="showSuccessModal"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center bg-success pa-4">
+          <v-icon size="32" class="me-2" color="white">mdi-check-circle</v-icon>
+          <span class="text-white">{{ $t('form.messages.successTitle') }}</span>
+        </v-card-title>
+        
+        <v-card-text class="py-6">
+          <p class="text-body-1 mb-0">
+            {{ modalMessage }}
+          </p>
+        </v-card-text>
+        
+        <v-divider></v-divider>
+        
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="success"
+            variant="elevated"
+            @click="closeModal"
+          >
+            {{ $t('form.messages.closeButton') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Error Modal -->
+    <v-dialog
+      v-model="showErrorModal"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center bg-error pa-4">
+          <v-icon size="32" class="me-2" color="white">mdi-alert-circle</v-icon>
+          <span class="text-white">{{ $t('form.messages.errorTitle') }}</span>
+        </v-card-title>
+        
+        <v-card-text class="py-6">
+          <p class="text-body-1 mb-0">
+            {{ modalMessage }}
+          </p>
+        </v-card-text>
+        
+        <v-divider></v-divider>
+        
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            variant="elevated"
+            @click="closeModal"
+          >
+            {{ $t('form.messages.closeButton') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Terms and Conditions Dialog -->
     <v-dialog
@@ -357,6 +494,12 @@ export default {
       llmProviders,
       isLoadingModels,
       modelsError,
+      featuredModels,
+      isLoadingFeatured,
+      featuredError,
+      showSuccessModal,
+      showErrorModal,
+      modalMessage,
       isFormValid,
       hasError,
       hasSuccess,
@@ -365,7 +508,9 @@ export default {
       submitRequest,
       resetForm,
       clearMessages,
-      fetchModels
+      closeModal,
+      fetchModels,
+      fetchFeaturedModels
     } = useKeyRequest()
 
     return {
@@ -377,6 +522,12 @@ export default {
       llmProviders,
       isLoadingModels,
       modelsError,
+      featuredModels,
+      isLoadingFeatured,
+      featuredError,
+      showSuccessModal,
+      showErrorModal,
+      modalMessage,
       isFormValid,
       hasError,
       hasSuccess,
@@ -385,7 +536,9 @@ export default {
       submitRequest,
       resetForm,
       clearMessages,
-      fetchModels
+      closeModal,
+      fetchModels,
+      fetchFeaturedModels
     }
   },
   data() {
@@ -400,6 +553,16 @@ export default {
     selectModel(model) {
       this.formData.llm = model.id
       this.selectedModelId = model.id
+    },
+    
+    async selectFeaturedModel(model) {
+      this.formData.llm = model.id
+      this.selectedModelId = model.id
+      
+      // Auto-submit if email and terms are valid
+      if (this.formData.email && this.agreeToTerms && this.$refs.form.validate()) {
+        await this.handleSubmit()
+      }
     },
     
     onModelInputChange() {
@@ -417,25 +580,11 @@ export default {
       }
 
       if (!this.agreeToTerms) {
-        // This should be caught by form validation, but just in case
         return
       }
 
       try {
-        const success = await this.submitRequest()
-        
-        if (success) {
-          // Scroll to top of form to show success message
-          this.$nextTick(() => {
-            const formElement = document.getElementById('request-form')
-            if (formElement) {
-              formElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-              })
-            }
-          })
-        }
+        await this.submitRequest()
       } catch (err) {
         console.error('Form submission error:', err)
       }
@@ -503,28 +652,47 @@ export default {
   }
 }
 
-/* Loading state styling */
-:deep(.v-btn--loading .v-btn__content) {
-  opacity: 0.8;
+/* Featured Model Cards Styling */
+.featured-card {
+  border-radius: 16px;
+  border-width: 2px;
+  transition: all 0.3s ease;
 }
 
-/* Success/Error alert animations */
-.v-alert {
-  animation: slideIn 0.3s ease-out;
+.featured-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.featured-card-selected {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
-/* Model Cards Styling */
+.featured-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: rgba(var(--v-theme-primary), 0.1);
+}
+
+/* Info button positioning for featured cards */
+.info-btn-featured {
+  position: absolute !important;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.info-btn-featured:hover {
+  opacity: 1;
+}
+
+/* Model Cards Styling (Advanced Options) */
 .model-cards-grid {
   margin-bottom: 0;
 }
@@ -570,6 +738,21 @@ export default {
 
 .model-card-selected .model-icon-container {
   background-color: rgba(var(--v-theme-primary), 0.1);
+}
+
+/* Expansion Panel Styling */
+:deep(.v-expansion-panel) {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+:deep(.v-expansion-panel-title) {
+  border-radius: 12px !important;
+}
+
+/* Modal Styling */
+:deep(.v-dialog .v-card) {
+  border-radius: 16px;
 }
 
 /* Responsive model cards */

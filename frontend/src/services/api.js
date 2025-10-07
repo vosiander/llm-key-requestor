@@ -100,6 +100,17 @@ class ApiService {
     }
   }
 
+  // Get featured models
+  async getFeaturedModels() {
+    try {
+      const response = await this.get('/api/featured-models')
+      return response.models || []
+    } catch (error) {
+      console.error('Failed to fetch featured models:', error)
+      throw error
+    }
+  }
+
   // Submit key request
   async submitKeyRequest(request) {
     if (!request.llm || !request.email) {

@@ -1,7 +1,7 @@
 export default {
   hero: {
-    title: 'Optimieren Sie Ihren LLM-API-Zugang',
-    subtitle: 'Erhalten Sie sichere API-Schlüssel für führende Sprachmodelle mit unserem einfachen, schnellen Genehmigungsverfahren. Verbinden Sie sich mit OpenAI, Anthropic, Google und mehr.',
+    title: 'Optimieren Sie Ihren KI-Modell-Zugang',
+    subtitle: 'Erhalten Sie sichere Zugangsschlüssel für führende KI-Modelle mit unserem einfachen, schnellen Genehmigungsverfahren. Verbinden Sie sich mit OpenAI, Anthropic, Google und mehr.',
     cta: 'Fordern Sie Ihren Schlüssel an',
     benefitsTitle: 'Warum unsere Plattform wählen?',
     benefitsSubtitle: 'Professionelles API-Schlüsselmanagement leicht gemacht',
@@ -14,10 +14,10 @@ export default {
         title: 'Sicherer Zugang',
         description: 'Sicherheit auf Unternehmensniveau mit verschlüsselter Schlüsselzustellung und sicheren Zugriffsverwaltungsprotokollen.'
       },
-      multiple: {
-        title: 'Mehrere Anbieter',
-        description: 'Zugang zu Schlüsseln für alle großen LLM-Anbieter einschließlich OpenAI, Anthropic, Google, Meta und mehr.'
-      },
+    multiple: {
+      title: 'Mehrere Anbieter',
+      description: 'Zugang zu Schlüsseln für alle großen KI-Modell-Anbieter einschließlich OpenAI, Anthropic, Google, Meta und mehr.'
+    },
       email: {
         title: 'E-Mail-Zustellung',
         description: 'Sichere Schlüsselzustellung direkt in Ihr Postfach mit detaillierten Einrichtungsanweisungen und Nutzungsrichtlinien.'
@@ -26,19 +26,19 @@ export default {
   },
   timeline: {
     title: 'So funktioniert es',
-    subtitle: 'Erhalten Sie Ihren LLM-API-Schlüssel in drei einfachen Schritten',
+    subtitle: 'Erhalten Sie Ihren KI-Modell-Zugang in drei einfachen Schritten',
     steps: {
       step1: {
         title: 'Anfrage einreichen',
-        description: 'Füllen Sie das Formular mit Ihrem bevorzugten LLM-Anbieter und Ihrer E-Mail-Adresse aus. Wählen Sie aus OpenAI, Anthropic, Google und mehr.'
+        description: 'Füllen Sie das Formular mit Ihrem bevorzugten KI-Modell und Ihrer E-Mail-Adresse aus. Wählen Sie aus OpenAI, Anthropic, Google und mehr.'
       },
       step2: {
         title: 'Admin-Genehmigung',
         description: 'Unser Team prüft und genehmigt Ihre Anfrage. Wir verifizieren Ihre Informationen und stellen die Einhaltung der Anbieterbestimmungen sicher.'
       },
       step3: {
-        title: 'Schlüssel erhalten',
-        description: 'Erhalten Sie Ihren API-Schlüssel sicher per E-Mail mit detaillierten Einrichtungsanweisungen und Nutzungsrichtlinien.'
+        title: 'Zugang erhalten',
+        description: 'Erhalten Sie Ihren Zugangsschlüssel sicher per E-Mail mit detaillierten Einrichtungsanweisungen und Nutzungsrichtlinien.'
       }
     },
     status: {
@@ -52,10 +52,20 @@ export default {
     }
   },
   form: {
-    title: 'Fordern Sie Ihren API-Schlüssel an',
-    subtitle: 'Füllen Sie das folgende Formular aus, um Zugang zu Ihrem bevorzugten LLM-Anbieter zu erhalten',
+    title: 'Fordern Sie Ihren Zugangsschlüssel an',
+    subtitle: 'Wählen Sie ein KI-Modell für Ihre Anforderungen',
+    featured: {
+      title: 'Empfohlene Modelle',
+      subtitle: 'Einfache Auswahl für häufige Anwendungsfälle',
+      requestButton: 'Anfragen'
+    },
+    advanced: {
+      title: 'Erweiterte Optionen',
+      showButton: 'Erweiterte Optionen anzeigen',
+      hideButton: 'Erweiterte Optionen ausblenden'
+    },
     provider: {
-      title: 'Wählen Sie Ihren LLM-Anbieter',
+      title: 'Alle verfügbaren Modelle',
       retry: 'Erneut versuchen',
       loading: 'Verfügbare Modelle werden geladen...',
       error: 'Fehler beim Laden der Modelle',
@@ -87,10 +97,10 @@ export default {
       }
     },
     fields: {
-      llm: {
-        label: 'LLM-Modell',
-        placeholder: 'z.B. OpenAI GPT-5, Claude 4, Gemini Ultra, oder wählen Sie aus den Karten oben',
-        tooltip: 'Wählen Sie eine Modellkarte oben oder geben Sie einen benutzerdefinierten Modellnamen ein'
+      model: {
+        label: 'KI-Modell',
+        placeholder: 'z.B. OpenAI GPT-4, Claude 3, Gemini Pro, oder wählen Sie aus den Karten',
+        tooltip: 'Wählen Sie eine Modellkarte oder geben Sie einen benutzerdefinierten Modellnamen ein'
       },
       email: {
         label: 'E-Mail-Adresse',
@@ -98,12 +108,12 @@ export default {
       }
     },
     validation: {
-      llmRequired: 'Bitte wählen Sie ein LLM-Modell aus',
+      modelRequired: 'Bitte wählen Sie ein KI-Modell aus',
       emailRequired: 'E-Mail-Adresse ist erforderlich',
       emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein'
     },
     terms: {
-      label: 'Ich stimme den {terms} zu und verstehe, dass API-Schlüssel den Nutzungsbedingungen des Anbieters unterliegen.',
+      label: 'Ich stimme den {terms} zu und verstehe, dass Zugangsschlüssel den Nutzungsbedingungen des Anbieters unterliegen.',
       link: 'Geschäftsbedingungen',
       required: 'Sie müssen den Geschäftsbedingungen zustimmen'
     },
@@ -118,30 +128,32 @@ export default {
     },
     messages: {
       successTitle: 'Anfrage erfolgreich gesendet!',
+      successMessage: 'Ihre Anfrage wurde erfolgreich übermittelt. Sie erhalten eine Benachrichtigung per E-Mail, sobald Ihr Zugangsschlüssel bereit ist.',
       errorTitle: 'Anfrage fehlgeschlagen',
-      defaultSuccess: 'Ihre Anfrage wurde erfolgreich gesendet. Sie erhalten bald eine E-Mail.'
+      errorMessage: 'Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      closeButton: 'Schließen'
     }
   },
   termsDialog: {
     title: 'Geschäftsbedingungen',
-    heading: 'Bedingungen für API-Schlüsselanfragen',
+    heading: 'Bedingungen für Zugangsschlüssel-Anfragen',
     intro: 'Durch das Absenden dieses Formulars erkennen Sie die folgenden Bedingungen an und stimmen ihnen zu:',
     items: {
       legitimateUse: {
         title: 'Legitime Nutzung:',
-        description: 'API-Schlüssel werden nur für legitime Entwicklungs-, Forschungs- oder Geschäftszwecke bereitgestellt.'
+        description: 'Zugangsschlüssel werden nur für legitime Entwicklungs-, Forschungs- oder Geschäftszwecke bereitgestellt.'
       },
       providerTerms: {
         title: 'Anbieterbestimmungen:',
-        description: 'Sie verpflichten sich, die Nutzungsbedingungen des jeweiligen LLM-Anbieters (OpenAI, Anthropic, Google usw.) einzuhalten.'
+        description: 'Sie verpflichten sich, die Nutzungsbedingungen des jeweiligen Modell-Anbieters (OpenAI, Anthropic, Google usw.) einzuhalten.'
       },
       security: {
         title: 'Sicherheit:',
-        description: 'Sie sind dafür verantwortlich, Ihre API-Schlüssel sicher aufzubewahren und sie nicht an unbefugte Personen weiterzugeben.'
+        description: 'Sie sind dafür verantwortlich, Ihre Zugangsschlüssel sicher aufzubewahren und sie nicht an unbefugte Personen weiterzugeben.'
       },
       monitoring: {
         title: 'Nutzungsüberwachung:',
-        description: 'Die API-Nutzung kann zu Compliance- und Sicherheitszwecken überwacht werden.'
+        description: 'Die Nutzung kann zu Compliance- und Sicherheitszwecken überwacht werden.'
       },
       revocation: {
         title: 'Widerruf:',
@@ -152,8 +164,8 @@ export default {
     button: 'Ich verstehe'
   },
   aboutDialog: {
-    title: 'Über LLM Key Requestor',
-    intro: 'LLM Key Requestor ist eine sichere Plattform zur Verwaltung von API-Schlüsselanfragen für führende Sprachmodellanbieter. Unser optimierter Prozess gewährleistet schnellen und sicheren Zugang zu den KI-Tools, die Sie benötigen.',
+    title: 'Über KI-Modell Zugangsportal',
+    intro: 'Das KI-Modell Zugangsportal ist eine sichere Plattform zur Verwaltung von Zugangsschlüssel-Anfragen für führende KI-Modellanbieter. Unser optimierter Prozess gewährleistet schnellen und sicheren Zugang zu den KI-Tools, die Sie benötigen.',
     supportedProviders: {
       title: 'Unterstützte Anbieter',
       items: [
@@ -179,8 +191,8 @@ export default {
     button: 'Schließen'
   },
   footer: {
-    title: 'LLM Key Requestor',
-    description: 'Sichere API-Schlüsselverwaltung für führende Sprachmodellanbieter',
+    title: 'KI-Modell Zugangsportal',
+    description: 'Sichere Zugangsschlüsselverwaltung für führende KI-Modellanbieter',
     backToTop: 'Zurück nach oben',
     copyright: '© {year} LLM Key Requestor. Erstellt mit Vue.js und Vuetify.',
     about: 'Über',

@@ -30,6 +30,18 @@ class LLMModel(BaseModel):
     description: str
 
 
+class FeaturedModel(BaseModel):
+    """Model representing a featured/easy-mode LLM configuration."""
+    
+    id: str
+    title: str
+    subtitle: str
+    description: str
+    documentation_link: str
+    icon: str
+    color: str
+
+
 class LiteLLMConfig(BaseModel):
     """LiteLLM backend configuration."""
     
@@ -198,6 +210,11 @@ class ConfigManager:
         """Get list of available LLM models from configuration."""
         models_data = self._config_data.get('models', [])
         return [LLMModel(**model) for model in models_data]
+    
+    def get_featured_models(self) -> list[FeaturedModel]:
+        """Get list of featured/easy-mode models from configuration."""
+        featured_data = self._config_data.get('featured_models', [])
+        return [FeaturedModel(**model) for model in featured_data]
     
     def fetch_litellm_models(self) -> list[LLMModel]:
         """

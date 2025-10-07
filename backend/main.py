@@ -7,7 +7,7 @@ from typing import Optional
 import logging
 import inspect
 from loguru import logger
-from config import config_manager, LLMModel
+from config import config_manager, LLMModel, FeaturedModel
 from src.services.kubernetes_secret_service import KubernetesSecretService
 from src.services.approval_service import ApprovalService
 from src.services.email_service import EmailService
@@ -132,6 +132,10 @@ class ModelsResponse(BaseModel):
     models: list[LLMModel]
 
 
+class FeaturedModelsResponse(BaseModel):
+    models: list[FeaturedModel]
+
+
 @app.get("/")
 async def root():
     return {"message": "LLM Key Requestor API", "status": "active"}
@@ -150,6 +154,16 @@ def get_models():
     """
     models = config_manager.get_all_models()
     return ModelsResponse(models=models)
+
+
+@app.get("/api/featured-models", response_model=FeaturedModelsResponse)
+def get_featured_models():
+    """
+    Return list of featured/easy-mode models from configuration.
+    These are user-friendly models with additional metadata like subtitle and documentation links.
+    """
+    models = config_manager.get_featured_models()
+    return FeaturedModelsResponse(models=models)
 
 
 @app.post("/api/request-key", response_model=KeyResponse)

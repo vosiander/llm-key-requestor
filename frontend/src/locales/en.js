@@ -1,7 +1,7 @@
 export default {
   hero: {
-    title: 'Streamline Your LLM API Access',
-    subtitle: 'Get secure API keys for leading language models with our simple, fast approval process. Connect to OpenAI, Anthropic, Google, and more.',
+    title: 'Streamline Your AI Model Access',
+    subtitle: 'Get secure access keys for leading AI models with our simple, fast approval process. Connect to OpenAI, Anthropic, Google, and more.',
     cta: 'Request Your Key',
     benefitsTitle: 'Why Choose Our Platform?',
     benefitsSubtitle: 'Professional API key management made simple',
@@ -14,10 +14,10 @@ export default {
         title: 'Secure Access',
         description: 'Enterprise-grade security with encrypted key delivery and secure access management protocols.'
       },
-      multiple: {
-        title: 'Multiple Providers',
-        description: 'Access keys for all major LLM providers including OpenAI, Anthropic, Google, Meta, and more.'
-      },
+    multiple: {
+      title: 'Multiple Providers',
+      description: 'Access keys for all major AI model providers including OpenAI, Anthropic, Google, Meta, and more.'
+    },
       email: {
         title: 'Email Delivery',
         description: 'Secure key delivery directly to your inbox with detailed setup instructions and usage guidelines.'
@@ -26,19 +26,19 @@ export default {
   },
   timeline: {
     title: 'How It Works',
-    subtitle: 'Get your LLM API key in three simple steps',
+    subtitle: 'Get your AI model access in three simple steps',
     steps: {
       step1: {
         title: 'Submit Request',
-        description: 'Fill out the form with your preferred LLM provider and email address. Choose from OpenAI, Anthropic, Google, and more.'
+        description: 'Fill out the form with your preferred AI model and email address. Choose from OpenAI, Anthropic, Google, and more.'
       },
       step2: {
         title: 'Admin Approval',
         description: 'Our team reviews and approves your request. We verify your information and ensure compliance with provider terms.'
       },
       step3: {
-        title: 'Receive Key',
-        description: 'Get your API key delivered securely via email with detailed setup instructions and usage guidelines.'
+        title: 'Receive Access',
+        description: 'Get your access key delivered securely via email with detailed setup instructions and usage guidelines.'
       }
     },
     status: {
@@ -52,10 +52,20 @@ export default {
     }
   },
   form: {
-    title: 'Request Your API Key',
-    subtitle: 'Fill out the form below to get access to your preferred LLM provider',
+    title: 'Request Your Access Key',
+    subtitle: 'Choose an AI model for your needs',
+    featured: {
+      title: 'Recommended Models',
+      subtitle: 'Easy selection for common use cases',
+      requestButton: 'Request'
+    },
+    advanced: {
+      title: 'Advanced Options',
+      showButton: 'Show Advanced Options',
+      hideButton: 'Hide Advanced Options'
+    },
     provider: {
-      title: 'Choose Your LLM Provider',
+      title: 'All Available Models',
       retry: 'Retry',
       loading: 'Loading available models...',
       error: 'Failed to Load Models',
@@ -87,10 +97,10 @@ export default {
       }
     },
     fields: {
-      llm: {
-        label: 'LLM Model',
-        placeholder: 'e.g., OpenAI GPT-5, Claude 4, Gemini Ultra, or select from cards above',
-        tooltip: 'Select a model card above or enter any custom model name'
+      model: {
+        label: 'AI Model',
+        placeholder: 'e.g., OpenAI GPT-4, Claude 3, Gemini Pro, or select from cards',
+        tooltip: 'Select a model card or enter any custom model name'
       },
       email: {
         label: 'Email Address',
@@ -98,12 +108,12 @@ export default {
       }
     },
     validation: {
-      llmRequired: 'Please select an LLM model',
+      modelRequired: 'Please select an AI model',
       emailRequired: 'Email address is required',
       emailInvalid: 'Please enter a valid email address'
     },
     terms: {
-      label: 'I agree to the {terms} and understand that API keys are subject to provider terms of service.',
+      label: 'I agree to the {terms} and understand that access keys are subject to provider terms of service.',
       link: 'Terms and Conditions',
       required: 'You must agree to the terms and conditions'
     },
@@ -118,30 +128,32 @@ export default {
     },
     messages: {
       successTitle: 'Request Submitted Successfully!',
+      successMessage: 'Your request has been successfully submitted. You will receive an email notification once your access key is ready.',
       errorTitle: 'Request Failed',
-      defaultSuccess: 'Your request has been submitted successfully. You will receive an email soon.'
+      errorMessage: 'An error occurred while processing your request. Please try again later.',
+      closeButton: 'Close'
     }
   },
   termsDialog: {
     title: 'Terms and Conditions',
-    heading: 'API Key Request Terms',
+    heading: 'Access Key Request Terms',
     intro: 'By submitting this form, you acknowledge and agree to the following terms:',
     items: {
       legitimateUse: {
         title: 'Legitimate Use:',
-        description: 'API keys are provided for legitimate development, research, or business purposes only.'
+        description: 'Access keys are provided for legitimate development, research, or business purposes only.'
       },
       providerTerms: {
         title: 'Provider Terms:',
-        description: 'You agree to comply with the terms of service of the respective LLM provider (OpenAI, Anthropic, Google, etc.).'
+        description: 'You agree to comply with the terms of service of the respective model provider (OpenAI, Anthropic, Google, etc.).'
       },
       security: {
         title: 'Security:',
-        description: 'You are responsible for keeping your API keys secure and not sharing them with unauthorized parties.'
+        description: 'You are responsible for keeping your access keys secure and not sharing them with unauthorized parties.'
       },
       monitoring: {
         title: 'Usage Monitoring:',
-        description: 'API usage may be monitored for compliance and security purposes.'
+        description: 'Usage may be monitored for compliance and security purposes.'
       },
       revocation: {
         title: 'Revocation:',
@@ -152,8 +164,8 @@ export default {
     button: 'I Understand'
   },
   aboutDialog: {
-    title: 'About LLM Key Requestor',
-    intro: 'LLM Key Requestor is a secure platform for managing API key requests for leading language model providers. Our streamlined process ensures quick and secure access to the AI tools you need.',
+    title: 'About AI Model Access Portal',
+    intro: 'AI Model Access Portal is a secure platform for managing access key requests for leading AI model providers. Our streamlined process ensures quick and secure access to the AI tools you need.',
     supportedProviders: {
       title: 'Supported Providers',
       items: [
@@ -179,8 +191,8 @@ export default {
     button: 'Close'
   },
   footer: {
-    title: 'LLM Key Requestor',
-    description: 'Secure API key management for leading language model providers',
+    title: 'AI Model Access Portal',
+    description: 'Secure access key management for leading AI model providers',
     backToTop: 'Back to Top',
     copyright: '© {year} LLM Key Requestor. Built with Vue.js and Vuetify.',
     about: 'About',

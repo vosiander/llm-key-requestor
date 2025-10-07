@@ -15,7 +15,35 @@ litellm:
   # Enable fetching models from LiteLLM (can be overridden by ENABLE_LITELLM_MODELS env var)
   enable_litellm_models: true
 
-# Available LLM Models
+# Featured Models (Easy Mode) - User-friendly model selection
+# These models are displayed prominently with simplified categorization
+featured_models:
+  - id: "claude-3"
+    title: "Model für starke Datensicherheit"
+    subtitle: "Anthropic Claude"
+    description: "Höchste Sicherheitsstandards und Datenschutz für sensible Anwendungen"
+    documentation_link: "https://docs.anthropic.com/claude/docs"
+    icon: "simple-icons:anthropic"
+    color: "#D4A574"
+    
+  - id: "openai-gpt4"
+    title: "Coding-Modell"
+    subtitle: "OpenAI GPT-4"
+    description: "Optimiert für Programmierung und technische Aufgaben"
+    documentation_link: "https://platform.openai.com/docs"
+    icon: "simple-icons:openai"
+    color: "#412991"
+    
+  - id: "gemini-pro"
+    title: "Vielseitiges Allround-Modell"
+    subtitle: "Google Gemini Pro"
+    description: "Flexible Lösung für verschiedene Anwendungsfälle und Aufgaben"
+    documentation_link: "https://ai.google.dev/docs"
+    icon: "simple-icons:google"
+    color: "#4285F4"
+
+# Available LLM Models (Advanced Mode)
+# These models are shown in the advanced options section
 models:
   - id: "openai-gpt4"
     title: "OpenAI GPT-4"

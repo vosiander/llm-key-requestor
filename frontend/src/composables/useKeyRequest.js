@@ -22,6 +22,16 @@ export function useKeyRequest() {
   const llmProviders = ref([])
   const isLoadingModels = ref(false)
   const modelsError = ref(null)
+  
+  // Featured models (fetched from API)
+  const featuredModels = ref([])
+  const isLoadingFeatured = ref(false)
+  const featuredError = ref(null)
+  
+  // Modal state
+  const showSuccessModal = ref(false)
+  const showErrorModal = ref(false)
+  const modalMessage = ref('')
 
   // Computed properties
   const isFormValid = computed(() => {
@@ -87,8 +97,31 @@ export function useKeyRequest() {
       isLoadingModels.value = false
     }
   }
+  
+  // Fetch featured models from API
+  async function fetchFeaturedModels() {
+    try {
+      isLoadingFeatured.value = true
+      featuredError.value = null
+      
+      const models = await apiService.getFeaturedModels()
+      featuredModels.value = models
+      
+      return true
+    } catch (err) {
+      console.error('Failed to fetch featured models:', err)
+      featuredError.value = err instanceof ApiError ? err.message : 'Failed to load featured models'
+      
+      // Fallback to empty array if fetch fails
+      featuredModels.value = []
+      
+      return false
+    } finally {
+      isLoadingFeatured.value = false
+    }
+  }
 
-  // Actions
+  // Submit request with modal handling
   async function submitRequest() {
     try {
       // Reset previous states
@@ -111,10 +144,11 @@ export function useKeyRequest() {
 
       // Handle successful response
       success.value = true
-      responseMessage.value = response.message || t('form.messages.defaultSuccess')
+      responseMessage.value = response.message || t('form.messages.successMessage')
       
-      // Optionally reset form after successful submission
-      // resetForm()
+      // Show success modal
+      modalMessage.value = responseMessage.value
+      showSuccessModal.value = true
       
       return true
 
@@ -124,8 +158,12 @@ export function useKeyRequest() {
       if (err instanceof ApiError) {
         error.value = err.message
       } else {
-        error.value = 'An unexpected error occurred. Please try again.'
+        error.value = t('form.messages.errorMessage')
       }
+      
+      // Show error modal
+      modalMessage.value = error.value
+      showErrorModal.value = true
       
       return false
     } finally {
@@ -143,6 +181,15 @@ export function useKeyRequest() {
     error.value = null
     success.value = false
     responseMessage.value = ''
+    showSuccessModal.value = false
+    showErrorModal.value = false
+    modalMessage.value = ''
+  }
+  
+  function closeModal() {
+    showSuccessModal.value = false
+    showErrorModal.value = false
+    modalMessage.value = ''
   }
 
   // Health check for backend connectivity
@@ -159,6 +206,7 @@ export function useKeyRequest() {
   // Load models on mount
   onMounted(() => {
     fetchModels()
+    fetchFeaturedModels()
   })
 
   // Return reactive state and methods
@@ -172,6 +220,12 @@ export function useKeyRequest() {
     llmProviders,
     isLoadingModels,
     modelsError,
+    featuredModels,
+    isLoadingFeatured,
+    featuredError,
+    showSuccessModal,
+    showErrorModal,
+    modalMessage,
     
     // Computed
     isFormValid,
@@ -186,9 +240,11 @@ export function useKeyRequest() {
     submitRequest,
     resetForm,
     clearMessages,
+    closeModal,
     validateForm,
     isValidEmail,
     checkBackendHealth,
-    fetchModels
+    fetchModels,
+    fetchFeaturedModels
   }
 }
