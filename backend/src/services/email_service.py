@@ -175,11 +175,10 @@ Thank you for your understanding.
                 'port': self.config.smtp_port,
             }
 
-            if self.config.smtp_port == 587:
+            if self.config.smtp_start_tls:
                 smtp_kwargs['start_tls'] = True
-            elif self.config.smtp_port == 465:
-                smtp_kwargs['use_tls'] = True
-            elif self.config.smtp_use_tls:
+            
+            if self.config.smtp_use_tls:
                 smtp_kwargs['use_tls'] = True
 
             if self.config.smtp_user and self.config.smtp_password:
@@ -216,13 +215,10 @@ Thank you for your understanding.
                 'port': self.config.smtp_port,
             }
             
-            # Use STARTTLS for port 587, direct TLS for port 465
-            if self.config.smtp_port == 587:
+            if self.config.smtp_start_tls:
                 smtp_kwargs['start_tls'] = True
-            elif self.config.smtp_port == 465:
-                smtp_kwargs['use_tls'] = True
-            elif self.config.smtp_use_tls:
-                # Fallback to config setting for other ports
+            
+            if self.config.smtp_use_tls:
                 smtp_kwargs['use_tls'] = True
             
             # Add authentication if credentials provided
@@ -264,13 +260,10 @@ Thank you for your understanding.
                 'port': self.config.smtp_port,
             }
             
-            # Use STARTTLS for port 587, direct TLS for port 465
-            if self.config.smtp_port == 587:
+            if self.config.smtp_start_tls:
                 smtp_kwargs['start_tls'] = True
-            elif self.config.smtp_port == 465:
-                smtp_kwargs['use_tls'] = True
-            elif self.config.smtp_use_tls:
-                # Fallback to config setting for other ports
+            
+            if self.config.smtp_use_tls:
                 smtp_kwargs['use_tls'] = True
             
             # Add authentication if credentials provided

@@ -293,7 +293,8 @@ class ConfigManager:
             smtp_user=os.getenv('SMTP_USER', yaml_smtp.get('user', '')),
             smtp_password=os.getenv('SMTP_PASSWORD', yaml_smtp.get('password', '')),
             smtp_from=os.getenv('SMTP_FROM', yaml_smtp.get('from', 'noreply@example.com')),
-            smtp_use_tls=os.getenv('SMTP_USE_TLS', str(yaml_smtp.get('use_tls', True))).lower() in ('true', '1', 'yes')
+            smtp_use_tls=os.getenv('SMTP_USE_TLS', str(yaml_smtp.get('use_tls', False))).lower() in ('true', '1', 'yes'),
+            smtp_start_tls=os.getenv('SMTP_START_TLS', str(yaml_smtp.get('start_tls', True))).lower() in ('true', '1', 'yes')
         )
     
     def get_queue_interval(self) -> str:

@@ -64,7 +64,7 @@ logger.info("Creating MCP server, will mount at /mcp")
 mcp_server = create_mcp_server(k8s_service=k8s_service,)
 
 # Initialize the streamable HTTP app to create the session manager
-mcp_app = mcp_server.streamable_http_app()
+mcp_app = mcp_server.http_app()
 logger.info("MCP server created successfully")
 
 
@@ -94,7 +94,10 @@ async def lifespan(app: FastAPI):
         logger.info("Application shutdown complete")
 
 
-app = FastAPI(title="LLM Key Requestor API", lifespan=lifespan)
+app = FastAPI(
+    title="LLM Key Requestor API",
+    lifespan=lifespan,
+    redirect_slashes=False)
 
 # Add ProxyHeadersMiddleware to handle reverse proxy headers (X-Forwarded-Proto, etc.)
 # This ensures redirects preserve HTTPS when behind a reverse proxy
