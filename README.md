@@ -43,6 +43,7 @@ docker-compose up -d
 
 The application will be available at:
 - Frontend: http://localhost:5173
+- Admin Panel: http://localhost:5174
 - Backend API: http://localhost:8000
 - LiteLLM: http://localhost:4000
 
@@ -110,6 +111,50 @@ frontend:
 ```
 
 For advanced configuration options, visit the [Helm chart repository](https://github.com/vosiander/helm-charts).
+
+## Admin Panel
+
+The admin panel provides a web interface for administrators to manage key requests with the following features:
+
+- **Secure Authentication**: HTTP Basic Auth using credentials from environment variables
+- **Request Management**: View and filter requests by status (pending, in-review, all)
+- **Approval Actions**: Approve or deny requests with optional reasons
+- **Real-time Updates**: Dashboard updates with latest request information
+
+### Accessing the Admin Panel
+
+1. Navigate to http://localhost:5174 (when running with Docker Compose)
+2. Login with credentials (default: admin/change-me-in-production)
+3. View and manage key requests from the dashboard
+
+### Admin Authentication
+
+Admin credentials are configured via environment variables or config.yaml:
+
+**Environment Variables:**
+```bash
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password
+```
+
+**Config File (backend/config.yaml):**
+```yaml
+admin:
+  username: "admin"
+  password: "change-me-in-production"
+```
+
+**IMPORTANT**: Always change the default admin password in production!
+
+### Admin API Endpoints
+
+The backend provides the following admin endpoints (all require authentication):
+
+- `POST /api/admin/verify` - Verify admin credentials
+- `GET /api/admin/requests?filter={pending|review|all}` - List key requests
+- `GET /api/admin/requests/{request_id}` - Get request details
+- `POST /api/admin/requests/{request_id}/approve` - Approve a request
+- `POST /api/admin/requests/{request_id}/deny` - Deny a request with reason
 
 ## Approval Process
 

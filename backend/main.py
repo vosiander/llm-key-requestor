@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 import logging
 import inspect
+import secrets
 from loguru import logger
 from config import config_manager, LLMModel, FeaturedModel
 from src.services.kubernetes_secret_service import KubernetesSecretService
@@ -219,6 +221,205 @@ async def request_key(request: KeyRequest):
             success=False,
             request_id=None
         )
+
+
+# Admin Panel Authentication
+security = HTTPBasic()
+
+
+def verify_admin_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    """
+    Verify admin credentials using HTTP Basic Auth.
+    
+    Credentials are checked against values from configuration
+    (which can be overridden by environment variables).
+    """
+    admin_config = config_manager.get_admin_config()
+    
+    is_correct_username = secrets.compare_digest(
+        credentials.username.encode("utf8"),
+        admin_config.username.encode("utf8")
+    )
+    is_correct_password = secrets.compare_digest(
+        credentials.password.encode("utf8"),
+        admin_config.password.encode("utf8")
+    )
+    
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    
+    return credentials.username
+
+
+class KeyRequestResponse(BaseModel):
+    request_id: str
+    email: str
+    model: str
+    state: str
+    created_at: str
+    updated_at: str
+    api_key: Optional[str] = None
+
+
+class DenyRequest(BaseModel):
+    reason: str
+
+
+class AdminActionResponse(BaseModel):
+    success: bool
+    message: str
+
+
+@app.post("/api/admin/verify")
+async def admin_verify(username: str = Depends(verify_admin_credentials)):
+    """Verify admin credentials."""
+    return {"authenticated": True, "username": username}
+
+
+@app.get("/api/admin/requests", response_model=List[KeyRequestResponse])
+async def get_admin_requests(
+    filter: str = "pending",
+    username: str = Depends(verify_admin_credentials)
+):
+    """
+    Get key requests based on filter.
+    
+    Filter options:
+    - pending: Only pending requests
+    - review: Only in-review requests
+    - all: All requests
+    """
+    try:
+        all_requests = await k8s_service.list_all()
+        
+        if filter == "pending":
+            filtered = [r for r in all_requests if r.state == KeyRequestState.PENDING]
+        elif filter == "review":
+            filtered = [r for r in all_requests if r.state == KeyRequestState.IN_REVIEW]
+        else:
+            filtered = all_requests
+        
+        return [
+            KeyRequestResponse(
+                request_id=r.request_id,
+                email=r.email,
+                model=r.model,
+                state=r.state.value,
+                created_at=r.created_at.isoformat(),
+                updated_at=r.updated_at.isoformat(),
+                api_key=r.api_key if r.state == KeyRequestState.APPROVED else None
+            )
+            for r in filtered
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching admin requests: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch requests")
+
+
+@app.get("/api/admin/requests/{request_id}", response_model=KeyRequestResponse)
+async def get_admin_request_details(
+    request_id: str,
+    username: str = Depends(verify_admin_credentials)
+):
+    """Get details for a specific request."""
+    try:
+        request = await k8s_service.get(request_id)
+        
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        return KeyRequestResponse(
+            request_id=request.request_id,
+            email=request.email,
+            model=request.model,
+            state=request.state.value,
+            created_at=request.created_at.isoformat(),
+            updated_at=request.updated_at.isoformat(),
+            api_key=request.api_key if request.state == KeyRequestState.APPROVED else None
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching request details: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch request details")
+
+
+@app.post("/api/admin/requests/{request_id}/approve", response_model=AdminActionResponse)
+async def approve_request(
+    request_id: str,
+    username: str = Depends(verify_admin_credentials)
+):
+    """Approve a key request."""
+    try:
+        logger.info(f"Admin {username} approving request {request_id}")
+        
+        # Get the request
+        request = await k8s_service.get(request_id)
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        # Update state to approved and process
+        await k8s_service.update_state(request_id, KeyRequestState.APPROVED)
+        
+        # Process the approval (generate key, send email, etc.)
+        await approval_service.process_approval(request_id)
+        
+        logger.info(f"Request {request_id} approved by admin {username}")
+        
+        return AdminActionResponse(
+            success=True,
+            message=f"Request {request_id} approved successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error approving request {request_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to approve request")
+
+
+@app.post("/api/admin/requests/{request_id}/deny", response_model=AdminActionResponse)
+async def deny_request(
+    request_id: str,
+    deny_data: DenyRequest,
+    username: str = Depends(verify_admin_credentials)
+):
+    """Deny a key request with reason."""
+    try:
+        logger.info(f"Admin {username} denying request {request_id} with reason: {deny_data.reason}")
+        
+        # Get the request
+        request = await k8s_service.get(request_id)
+        if not request:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        # Update state to denied
+        await k8s_service.update_state(request_id, KeyRequestState.DENIED)
+        
+        # Send denial email
+        try:
+            await email_service.send_denial_email(
+                request.email,
+                request.model,
+                deny_data.reason
+            )
+        except Exception as email_error:
+            logger.error(f"Failed to send denial email: {email_error}")
+        
+        logger.info(f"Request {request_id} denied by admin {username}")
+        
+        return AdminActionResponse(
+            success=True,
+            message=f"Request {request_id} denied successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error denying request {request_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to deny request")
 
 
 if __name__ == "__main__":

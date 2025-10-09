@@ -56,6 +56,13 @@ class MCPConfig(BaseModel):
     api_key: str = Field(default="")
 
 
+class AdminConfig(BaseModel):
+    """Admin panel authentication configuration."""
+    
+    username: str = Field(default="admin")
+    password: str = Field(default="change-me-in-production")
+
+
 class ConfigModule(Module):
     """Injector module for providing configured services."""
     
@@ -204,6 +211,19 @@ class ConfigManager:
         
         return MCPConfig(
             api_key=os.getenv('MCP_API_KEY', yaml_config.get('api_key', ''))
+        )
+    
+    def get_admin_config(self) -> AdminConfig:
+        """
+        Get admin panel configuration with environment variable overrides.
+        
+        Environment variables take precedence over YAML values.
+        """
+        yaml_config = self._config_data.get('admin', {})
+        
+        return AdminConfig(
+            username=os.getenv('ADMIN_USERNAME', yaml_config.get('username', 'admin')),
+            password=os.getenv('ADMIN_PASSWORD', yaml_config.get('password', 'change-me-in-production'))
         )
     
     def get_models(self) -> list[LLMModel]:

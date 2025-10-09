@@ -6,6 +6,13 @@ mcp:
   # IMPORTANT: Change this to a secure random value in production!
   api_key: "change-me-to-a-secure-api-key"
 
+# Admin Panel Authentication
+# IMPORTANT: Change these credentials in production!
+# Can be overridden by ADMIN_USERNAME and ADMIN_PASSWORD env vars
+admin:
+  username: "admin"
+  password: "change-me-in-production"
+
 # LiteLLM Backend Configuration
 litellm:
   # Base URL for LiteLLM backend (can be overridden by LITELLM_BASE_URL env var)
