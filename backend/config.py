@@ -151,6 +151,13 @@ class Config(BaseSettings):
         description="Enable fetching models from LiteLLM"
     )
     
+    # CORS origins configuration
+    cors_origins: Optional[str] = Field(
+        default=None,
+        alias="CORS_ORIGINS",
+        description="Semicolon-separated list of allowed CORS origins"
+    )
+    
     # Path to config file
     config_file: str = Field(
         default="config.yaml",
@@ -225,6 +232,24 @@ class ConfigManager:
             username=os.getenv('ADMIN_USERNAME', yaml_config.get('username', 'admin')),
             password=os.getenv('ADMIN_PASSWORD', yaml_config.get('password', 'change-me-in-production'))
         )
+    
+    def get_cors_origins(self) -> list[str]:
+        """
+        Get CORS allowed origins with environment variable override.
+        
+        Returns:
+            List of allowed origin URLs. Defaults to localhost if not configured.
+        """
+        if self.settings.cors_origins:
+            # Split by semicolon and strip whitespace
+            origins = [origin.strip() for origin in self.settings.cors_origins.split(';') if origin.strip()]
+            logger.info(f"Using CORS origins from environment: {origins}")
+            return origins
+        
+        # Default to localhost for development
+        default_origins = ["http://localhost:5174"]
+        logger.info(f"Using default CORS origins: {default_origins}")
+        return default_origins
     
     def get_models(self) -> list[LLMModel]:
         """Get list of available LLM models from configuration."""

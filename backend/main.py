@@ -108,9 +108,10 @@ app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=config_manager.get_cors_origins(),
     allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Mount MCP server at /mcp
