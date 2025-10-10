@@ -1,5 +1,5 @@
 .env
-values.yaml
+/values.yaml
 Taskfile.yaml
 
 # Byte-compiled / optimized / DLL files

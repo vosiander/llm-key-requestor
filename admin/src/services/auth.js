@@ -1,5 +1,7 @@
 // Authentication service for admin panel using Basic Auth
 const AUTH_KEY = 'admin_auth'
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:8000'
+const API_BASE = `${API_BASE_URL}/api`
 
 export const authService = {
   /**
@@ -13,7 +15,7 @@ export const authService = {
       const credentials = btoa(`${username}:${password}`)
       
       // Verify credentials with backend
-      const response = await fetch('/api/admin/verify', {
+      const response = await fetch(`${API_BASE}/admin/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${credentials}`,
