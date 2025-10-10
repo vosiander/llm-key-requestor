@@ -1,7 +1,8 @@
 // API service layer for admin panel
 import { authService } from './auth'
 
-const API_BASE = '/api'
+const API_BASE_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:8000'
+const API_BASE = `${API_BASE_URL}/api`
 
 /**
  * Make an authenticated API request
