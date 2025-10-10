@@ -213,6 +213,36 @@ class KubernetesSecretService:
             logger.error(f"Error finding secrets by status {state.value}: {e}")
             raise
     
+    async def list_all(self) -> list[KeyRequestData]:
+        """
+        List all key request secrets.
+        
+        Returns:
+            List of all KeyRequestData objects
+        """
+        try:
+            # Use label selector to find all llm-key-request secrets
+            label_selector = 'app.kubernetes.io/component=llm-key-request'
+            secrets = self.core_v1.list_namespaced_secret(
+                self.namespace,
+                label_selector=label_selector
+            )
+            
+            results = []
+            for secret in secrets.items:
+                try:
+                    results.append(self._secret_to_request_data(secret))
+                except Exception as e:
+                    logger.error(f"Error parsing secret {secret.metadata.name}: {e}")
+                    continue
+            
+            logger.info(f"Found {len(results)} total key request secrets")
+            return results
+            
+        except ApiException as e:
+            logger.error(f"Error listing all secrets: {e}")
+            raise
+    
     async def create(self, email: str, model: str) -> KeyRequestData:
         """
         Create new key request secret with pending state.

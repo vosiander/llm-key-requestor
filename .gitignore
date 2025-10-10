@@ -1,5 +1,7 @@
 .env
 /values.yaml
+# helm chart is built via helm_charts repository
+helm/
 Taskfile.yaml
 
 # Byte-compiled / optimized / DLL files
