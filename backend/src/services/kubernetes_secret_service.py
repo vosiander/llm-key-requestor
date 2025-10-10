@@ -280,6 +280,18 @@ class KubernetesSecretService:
             logger.error(f"Error creating secret for email {email}: {e}")
             raise
     
+    async def get(self, request_id: str) -> Optional[KeyRequestData]:
+        """
+        Get secret by request ID (alias for find).
+        
+        Args:
+            request_id: Unique request identifier
+            
+        Returns:
+            KeyRequestData if found, None otherwise
+        """
+        return await self.find(request_id)
+    
     async def update(self, request_id: str, **kwargs) -> KeyRequestData:
         """
         Update secret fields (state, api_key, etc.).
@@ -323,6 +335,19 @@ class KubernetesSecretService:
         except ApiException as e:
             logger.error(f"Error updating secret for request_id {request_id}: {e}")
             raise
+    
+    async def update_state(self, request_id: str, state: KeyRequestState) -> KeyRequestData:
+        """
+        Update the state of a key request.
+        
+        Args:
+            request_id: Request identifier
+            state: New state for the request
+            
+        Returns:
+            Updated KeyRequestData
+        """
+        return await self.update(request_id, state=state)
     
     async def delete(self, request_id: str) -> bool:
         """

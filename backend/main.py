@@ -300,7 +300,7 @@ async def get_admin_requests(
         if filter == "pending":
             filtered = [r for r in all_requests if r.state == KeyRequestState.PENDING]
         elif filter == "review":
-            filtered = [r for r in all_requests if r.state == KeyRequestState.IN_REVIEW]
+            filtered = [r for r in all_requests if r.state == KeyRequestState.REVIEW]
         else:
             filtered = all_requests
         
