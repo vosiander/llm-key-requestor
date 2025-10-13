@@ -363,11 +363,16 @@ async def approve_request(
         if not request:
             raise HTTPException(status_code=404, detail="Request not found")
         
-        # Update state to approved and process
-        await k8s_service.update_state(request_id, KeyRequestState.APPROVED)
+        # Create approval response
+        from src.models.key_request import ApprovalResponse
+        approval_response = ApprovalResponse(
+            state=KeyRequestState.APPROVED,
+            reason=f"Manually approved by admin {username}",
+            can_retry=False
+        )
         
-        # Process the approval (generate key, send email, etc.)
-        await approval_service.process_approval(request_id)
+        # Process the approval (generate key, send email, update state)
+        await approval_service.take_action(approval_response, request)
         
         logger.info(f"Request {request_id} approved by admin {username}")
         
@@ -397,18 +402,16 @@ async def deny_request(
         if not request:
             raise HTTPException(status_code=404, detail="Request not found")
         
-        # Update state to denied
-        await k8s_service.update_state(request_id, KeyRequestState.DENIED)
+        # Create denial response
+        from src.models.key_request import ApprovalResponse
+        approval_response = ApprovalResponse(
+            state=KeyRequestState.DENIED,
+            reason=f"Manually denied by admin {username}: {deny_data.reason}",
+            can_retry=False
+        )
         
-        # Send denial email
-        try:
-            await email_service.send_denial_email(
-                request.email,
-                request.model,
-                deny_data.reason
-            )
-        except Exception as email_error:
-            logger.error(f"Failed to send denial email: {email_error}")
+        # Process the denial (send email, update state)
+        await approval_service.take_action(approval_response, request)
         
         logger.info(f"Request {request_id} denied by admin {username}")
         
