@@ -173,7 +173,7 @@ class ApprovalService:
                         email=request.email,
                         model=request.model,
                         api_key=api_key,
-                        gateway_url=self.litellm_config.base_url
+                        gateway_url=self.litellm_config.gateway_url
                     )
 
                     if email_sent:

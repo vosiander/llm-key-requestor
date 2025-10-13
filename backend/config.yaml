@@ -17,6 +17,9 @@ admin:
 litellm:
   # Base URL for LiteLLM backend (can be overridden by LITELLM_BASE_URL env var)
   base_url: "http://localhost:4000"
+  # Gateway URL for public-facing API access (can be overridden by LITELLM_GATEWAY_URL env var)
+  # If not set, defaults to base_url. Use this to provide a different URL in emails to users.
+  gateway_url: ""
   # API key for LiteLLM backend (can be overridden by LITELLM_API_KEY env var)
   api_key: ""
   # Enable fetching models from LiteLLM (can be overridden by ENABLE_LITELLM_MODELS env var)

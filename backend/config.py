@@ -46,6 +46,7 @@ class LiteLLMConfig(BaseModel):
     """LiteLLM backend configuration."""
     
     base_url: str = Field(default="http://localhost:4000")
+    gateway_url: str = Field(default="http://localhost:4000")
     api_key: str = Field(default="")
     enable_litellm_models: bool = Field(default=True)
 
@@ -140,6 +141,11 @@ class Config(BaseSettings):
         alias="LITELLM_BASE_URL",
         description="LiteLLM backend base URL"
     )
+    litellm_gateway_url: Optional[str] = Field(
+        default=None,
+        alias="LITELLM_GATEWAY_URL",
+        description="LiteLLM public-facing gateway URL"
+    )
     litellm_api_key: Optional[str] = Field(
         default=None,
         alias="LITELLM_API_KEY",
@@ -199,11 +205,16 @@ class ConfigManager:
         Get LiteLLM configuration with environment variable overrides.
         
         Environment variables take precedence over YAML values.
+        If gateway_url is not set, it defaults to base_url.
         """
         yaml_config = self._config_data.get('litellm', {})
         
+        base_url = self.settings.litellm_base_url or yaml_config.get('base_url', 'http://localhost:4000')
+        gateway_url = self.settings.litellm_gateway_url or yaml_config.get('gateway_url', '') or base_url
+        
         return LiteLLMConfig(
-            base_url=self.settings.litellm_base_url or yaml_config.get('base_url', 'http://localhost:4000'),
+            base_url=base_url,
+            gateway_url=gateway_url,
             api_key=self.settings.litellm_api_key or yaml_config.get('api_key', ''),
             enable_litellm_models=self.settings.enable_litellm_models if self.settings.enable_litellm_models is not None else yaml_config.get('enable_litellm_models', True)
         )
